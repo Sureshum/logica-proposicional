@@ -1,5 +1,7 @@
 # Propositional Logic System
 
+[![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)](#) [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000)](#)  [![HTML](https://img.shields.io/badge/HTML-%23E34F26.svg?logo=html5&logoColor=white)](#) [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-%2338B2AC.svg?logo=tailwind-css&logoColor=white)](#)
+
 A Flask web application to study and practice **Propositional Logic**: building
 Well-Formed Formulas (WFF), semantic analysis with truth tables, and a
 **Machine Learning** assistant that classifies propositions and translates
@@ -359,3 +361,8 @@ python app.py                          # server at http://localhost:5000
    `extraer_caracteristicas`; the dataset and model adopt it automatically.
 4. **Reason with De Morgan**: transform the AST (`¬(p ∧ q)` → `¬p ∨ ¬q`) by walking
    it with `hijos()` and rebuilding with `BinNode`/`NegNode`.
+
+<a href="https://github.com/Sureshum">
+  <img src="https://media1.tenor.com/m/ki07u04jVnwAAAAC/gigi-murin-hololive-english.gif" width="100%" alt="Header Banner" />
+</a>
+   

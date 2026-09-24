@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block titulo %}Panel principal · Lógica Proposicional{% endblock %}
+
+{% block contenido %}
+
+<section class="caja p-8 mb-8">
+  <h1 class="pixel-titulo text-slate-800">
+    Bienvenido(a), <span class="text-amber-400">{{ session.get('usuario', '') }}</span>
+  </h1>
+  <p class="text-slate-600 mt-4 max-w-3xl text-lg">
+    Sistema interactivo de <strong>Lógica Proposicional</strong> con tres módulos:
+    construir Fórmulas Bien Formadas paso a paso, analizar una FBF ingresada,
+    y un asistente de <em>Machine Learning</em> que clasifica proposiciones y
+    traduce lenguaje natural a símbolos.
+  </p>
+
+  <div class="grid md:grid-cols-3 gap-6 mt-8">
+
+    <a href="{{ url_for('directo') }}" class="tarjeta-modulo bg-gradient-to-br from-indigo-500 to-violet-600">
+      <span class="icono-modulo">p → q</span>
+      <h2 class="text-lg font-bold text-white">Módulo Directo</h2>
+      <p class="text-sm text-indigo-100">
+        Define proposiciones simples (p: "Llueve") y aplica conectivos
+        (¬, ∧, ∨, →, ↔) para construir la FBF resultante y su lectura.
+      </p>
+      <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-white">
+        Abrir módulo <span>→</span>
+      </span>
+    </a>
+
+    <a href="{{ url_for('inverso') }}" class="tarjeta-modulo bg-gradient-to-br from-emerald-500 to-teal-600">
+      <span class="icono-modulo">(p ∧ q)</span>
+      <h2 class="text-lg font-bold text-white">Módulo Inverso</h2>
+      <p class="text-sm text-emerald-100">
+        Ingresa una FBF válida (ej. <span class="texto-fbf">(p ∧ q) → ¬r</span>),
+        obtén sus átomos, interpretación, tabla de verdad y árbol sintáctico.
+      </p>
+      <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-white">
+        Abrir módulo <span>→</span>
+      </span>
+    </a>
+
+    <a href="{{ url_for('ml') }}" class="tarjeta-modulo bg-gradient-to-br from-orange-500 to-rose-600">
+      <span class="icono-modulo">e₁…eₙ → mL</span>
+      <h2 class="text-lg font-bold text-white">Asistente IA</h2>
+      <p class="text-sm text-orange-100">
+        Clasifica una proposición como Tautología / Contradicción / Contingencia
+        y traduce oraciones en español a su forma simbólica (NLP).
+      </p>
+      <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-white">
+        Abrir módulo <span>→</span>
+      </span>
+    </a>
+
+  </div>
+</section>
+
+<section class="caja p-6">
+  <h2 class="pixel-titulo text-slate-700 mb-4">Símbolos utilizados por el sistema</h2>
+  <div class="grid sm:grid-cols-5 gap-3 text-sm">
+    <div class="p-3 bg-slate-50 border-2 border-black text-center">
+      <div class="texto-fbf text-lg">¬ / ~</div>
+      <div class="text-slate-500">Negación</div>
+    </div>
+    <div class="p-3 bg-slate-50 border-2 border-black text-center">
+      <div class="texto-fbf text-lg">∧ / &</div>
+      <div class="text-slate-500">Conjunción</div>
+    </div>
+    <div class="p-3 bg-slate-50 border-2 border-black text-center">
+      <div class="texto-fbf text-lg">∨ / |</div>
+      <div class="text-slate-500">Disyunción</div>
+    </div>
+    <div class="p-3 bg-slate-50 border-2 border-black text-center">
+      <div class="texto-fbf text-lg">→ / =&gt;</div>
+      <div class="text-slate-500">Condicional</div>
+    </div>
+    <div class="p-3 bg-slate-50 border-2 border-black text-center">
+      <div class="texto-fbf text-lg">↔ / &lt;=&gt;</div>
+      <div class="text-slate-500">Bicondicional</div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,8 @@
+# Dependencias mínimas para ejecutar el sistema.
+Flask>=3.0
+
+# --- Dependencia OPCIONAL para el modelo de Machine Learning ---
+# Si se instala, el sistema usa RandomForest de Scikit-Learn.
+# Si NO está instalada, el asistente usa automáticamente un clasificador
+# k-NN implementado en Python puro (sin dependencias externas).
+# scikit-learn

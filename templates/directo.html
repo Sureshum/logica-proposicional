@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block titulo %}Módulo Directo · Construcción de FBF{% endblock %}
+
+{% block contenido %}
+
+<div class="flex items-start justify-between gap-4 mb-6">
+  <div>
+    <h1 class="pixel-titulo text-slate-800">Módulo Directo</h1>
+    <p class="text-sm text-slate-500">
+      Construcción de proposiciones moleculares → Fórmula Bien Formada (FBF).
+    </p>
+  </div>
+</div>
+
+<section class="caja p-6 mb-6">
+  <h2 class="pixel-titulo text-slate-700 mb-1">1 · Proposiciones simples</h2>
+  <p class="text-sm text-slate-500 mb-4">
+    Define variables con su significado. Cada variable se convierte en una
+    tarjeta que podrás negar o combinar.
+  </p>
+
+  <div class="grid sm:grid-cols-[140px_1fr_auto_auto] gap-2">
+    <input id="nuevo-simbolo" type="text" maxlength="12" placeholder="símbolo (p, q…)"
+           class="px-3 py-2 border border-slate-300 focus:ring-2 focus:ring-indigo-400 outline-none">
+    <input id="nuevo-descripcion" type="text" placeholder='Descripción, ej. "Llueve"'
+           class="px-3 py-2 border border-slate-300 focus:ring-2 focus:ring-indigo-400 outline-none">
+    <button onclick="agregarAtomo()" class="btn-pixel btn-azul">+ Añadir</button>
+    <button onclick="generarAleatoria()" title="Genera una proposición al azar con su significado"
+            class="btn-pixel btn-rosa">⚡ Generar</button>
+  </div>
+  <p class="text-xs text-slate-400 mt-3">
+    <strong>⚡ Generar</strong> crea una proposición aleatoria (simple o molecular)
+    con significado automático y la añade como tarjeta.
+  </p>
+  <p id="estado-atomo" class="text-sm text-amber-700 mt-2 hidden"></p>
+</section>
+
+<section class="caja p-6 mb-6">
+  <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+    <h2 class="pixel-titulo text-slate-700">2 · Conectivos</h2>
+    <div class="flex items-center gap-2 text-sm">
+      <span class="text-slate-500">Selección:</span>
+      <span id="chipA" class="chip chip-a">A: ninguna</span>
+      <span id="chipB" class="chip chip-b">B: ninguna</span>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-2 mb-4">
+    <button onclick="negar()" class="btn-conectivo" title="Negación: no A">
+      <span class="texto-fbf">¬</span>
+      <span class="text-[10px] normal-case">no</span>
+    </button>
+    <button onclick="combinar('∧')" class="btn-conectivo" title="Conjunción: A y B">
+      <span class="texto-fbf">∧</span>
+      <span class="text-[10px] normal-case">y</span>
+    </button>
+    <button onclick="combinar('∨')" class="btn-conectivo" title="Disyunción: A o B">
+      <span class="texto-fbf">∨</span>
+      <span class="text-[10px] normal-case">o</span>
+    </button>
+    <button onclick="combinar('→')" class="btn-conectivo" title="Condicional: si A entonces B">
+      <span class="texto-fbf">→</span>
+      <span class="text-[10px] normal-case">si…entonces</span>
+    </button>
+    <button onclick="combinar('↔')" class="btn-conectivo" title="Bicondicional: A si y solo si B">
+      <span class="texto-fbf">↔</span>
+      <span class="text-[10px] normal-case">sii</span>
+    </button>
+    <p id="estado-conector" class="text-sm text-slate-500 ml-2 flex-1"></p>
+  </div>
+
+  <p class="text-xs text-slate-400 mb-3">
+    Selecciona la tarjeta <strong>A</strong> y la tarjeta <strong>B</strong> con
+    los botones de cada tarjeta. <strong>¬</strong> se aplica sobre A (o la última
+    tarjeta si no hay selección). Los conectivos binarios combinan A y B.
+  </p>
+</section>
+
+<section class="caja p-6 mb-6">
+  <h2 class="pixel-titulo text-slate-700 mb-3">3 · Tarjetas de construcción</h2>
+
+  <div id="panel-resultado" class="hidden mb-5 border-2 border-indigo-300 bg-indigo-50 p-5 text-center">
+    <div class="text-xs text-indigo-400 mb-2">Última FBF construida</div>
+    <div id="res-formula" class="texto-fbf-grande text-slate-900"></div>
+    <div id="res-lectura" class="text-sm text-slate-600 mt-1 italic"></div>
+  </div>
+
+  <div id="lista-tarjetas" class="grid gap-3"></div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // ---------------------------------------------------------------------
+  // Estado de la sesión de construcción (solo en el navegador del usuario).
+  // Cada tarjeta guarda: id, formula (FBF), lectura y las descripciones de
+  // sus átomos (para poder "leerla" en español en el servidor).
+  // ---------------------------------------------------------------------
+  let idTarjeta = 0;
+  let tarjetas = [];
+  let selA = null;
+  let selB = null;
+
+  function herramientas() {
+    return {
+      mostrar: function(msg, color) {
+        const el = document.getElementById('estado-atomo');
+        el.classList.remove('hidden');
+        el.textContent = msg;
+      },
+      simbolosEnUso: function() {
+        const s = new Set();
+        tarjetas.forEach(t => Object.keys(t.descripciones || {}).forEach(k => s.add(k)));
+        return Array.from(s);
+      },
+      unirDescripciones: function(lista) {
+        const d = {};
+        lista.forEach(t => Object.assign(d, t.descripciones || {}));
+        return d;
+      }
+    };
+  }
+
+  function obtenerTarjeta(id) {
+    return tarjetas.find(t => t.id === id) || null;
+  }
+
+  function tarjetaANegar() {
+    return obtenerTarjeta(selA) || tarjetas[0] || null;
+  }
+
+  // -------------------------- selección A / B --------------------------
+  function asignarA(id) {
+    selA = id;
+    if (selB === id) { selB = null; }
+    renderTodo();
+  }
+  function asignarB(id) {
+    selB = id;
+    if (selA === id) { selA = null; }
+    renderTodo();
+  }
+  function quitarA() { selA = null; renderTodo(); }
+  function quitarB() { selB = null; renderTodo(); }
+
+  function borrar(id) {
+    tarjetas = tarjetas.filter(t => t.id !== id);
+    if (selA === id) { selA = null; }
+    if (selB === id) { selB = null; }
+    renderTodo();
+  }
+
+  // ---------------------------- operaciones ----------------------------
+  async function agregarAtomo() {
+    const h = herramientas();
+    const simbolo = document.getElementById('nuevo-simbolo').value.trim();
+    const descripcion = document.getElementById('nuevo-descripcion').value.trim();
+    if (!simbolo) { h.mostrar('Escribe un símbolo para la proposición (p, q…).', 'amber'); return; }
+
+    const res = await apiFetch('/api/directo/agregar', {
+      simbolo: simbolo,
+      descripcion: descripcion,
+      existentes: h.simbolosEnUso()
+    });
+
+    if (!res.ok) { h.mostrar(res.error, 'red'); return; }
+
+    const descripciones = (res.descripcion ? { [res.formula]: res.descripcion } : {});
+    tarjetas.unshift({
+      id: ++idTarjeta,
+      formula: res.formula,
+      lectura: res.lectura,
+      descripciones: descripciones
+    });
+    document.getElementById('nuevo-simbolo').value = '';
+    document.getElementById('nuevo-descripcion').value = '';
+    h.mostrar(`Proposición ${res.formula} añadida.`, 'green');
+    renderTodo();
+  }
+
+  async function generarAleatoria() {
+    const h = herramientas();
+    const res = await apiFetch('/api/generar', { existentes: h.simbolosEnUso() });
+    if (!res.ok) { h.mostrar(res.error, 'red'); return; }
+
+    // Solo conservamos descripciones no vacías (para que la lectura salga limpia).
+    const descripciones = {};
+    Object.keys(res.descripciones || {}).forEach(k => {
+      if (res.descripciones[k]) { descripciones[k] = res.descripciones[k]; }
+    });
+
+    tarjetas.unshift({
+      id: ++idTarjeta,
+      formula: res.formula,
+      lectura: res.lectura,
+      descripciones: descripciones
+    });
+    h.mostrar(`Proposición generada: ${res.formula}`, 'green');
+    renderTodo();
+  }
+
+  async function negar() {
+    const origen = tarjetaANegar();
+    if (!origen) { mostrarEstado('Aún no hay ninguna tarjeta.', 'red'); return; }
+    const res = await apiFetch('/api/directo/negar', {
+      formula: origen.formula,
+      descripciones: origen.descripciones
+    });
+    if (!res.ok) { mostrarEstado(res.error, 'red'); return; }
+
+    tarjetas.unshift({
+      id: ++idTarjeta,
+      formula: res.formula,
+      lectura: res.lectura,
+      descripciones: res.descripciones
+    });
+    selA = null;
+    mostrarEstado('Negación aplicada (¬).', 'green');
+    renderTodo();
+  }
+
+  async function combinar(op) {
+    const a = obtenerTarjeta(selA);
+    const b = obtenerTarjeta(selB);
+    if (!a || !b || a.id === b.id) {
+      mostrarEstado('Selecciona dos tarjetas distintas (A y B) para combinar.', 'red');
+      return;
+    }
+    const res = await apiFetch('/api/directo/combinar', {
+      a: a.formula,
+      b: b.formula,
+      op: op,
+      descripciones: herramientas().unirDescripciones([a, b])
+    });
+    if (!res.ok) { mostrarEstado(res.error, 'red'); return; }
+
+    tarjetas.unshift({
+      id: ++idTarjeta,
+      formula: res.formula,
+      lectura: res.lectura,
+      descripciones: res.descripciones
+    });
+    selA = selB = null;
+    mostrarEstado(`Conectivo ${op} aplicado.`, 'green');
+    renderTodo();
+  }
+
+  // ----------------------------- render ---------------------------------
+  function renderTodo() {
+    renderChips();
+    renderResultado();
+    renderLista();
+  }
+
+  function renderChips() {
+    const a = obtenerTarjeta(selA);
+    const b = obtenerTarjeta(selB);
+    document.getElementById('chipA').innerHTML = a
+      ? `A: <span class="texto-fbf">${esc(a.formula)}</span> <button onclick="quitarA()" class="ml-1 text-red-500 font-bold">✕</button>`
+      : 'A: ninguna';
+    document.getElementById('chipB').innerHTML = b
+      ? `B: <span class="texto-fbf">${esc(b.formula)}</span> <button onclick="quitarB()" class="ml-1 text-red-500 font-bold">✕</button>`
+      : 'B: ninguna';
+  }
+
+  function renderResultado() {
+    const panel = document.getElementById('panel-resultado');
+    if (!tarjetas.length) {
+      panel.classList.add('hidden');
+      return;
+    }
+    panel.classList.remove('hidden');
+    document.getElementById('res-formula').innerHTML = esc(tarjetas[0].formula);
+    document.getElementById('res-lectura').textContent = `“${tarjetas[0].lectura}”`;
+  }
+
+  function renderLista() {
+    const cont = document.getElementById('lista-tarjetas');
+    if (!tarjetas.length) {
+      cont.innerHTML = '<p class="text-sm text-slate-400">Aún no hay tarjetas. Añade tu primera proposición simple.</p>';
+      return;
+    }
+    cont.innerHTML = tarjetas.map(t => `
+      <div class="flex items-center gap-3 border-2 border-black p-3 bg-slate-50
+                  ${t.id === selA ? 'ring-indigo-400' : ''}
+                  ${t.id === selB ? 'ring-emerald-400' : ''}">
+        <button onclick="asignarA(${t.id})"
+                class="badge-radio badge-a ${t.id === selA ? 'activo' : ''}" title="Usar como A">A</button>
+        <button onclick="asignarB(${t.id})"
+                class="badge-radio badge-b ${t.id === selB ? 'activo' : ''}" title="Usar como B">B</button>
+        <div class="min-w-0">
+          <div class="texto-fbf truncate">${esc(t.formula)}</div>
+          <div class="text-xs text-slate-500 truncate">${esc(t.lectura)}</div>
+        </div>
+        <button onclick="borrar(${t.id})" class="ml-auto p-1 text-slate-400 hover:text-red-500 hover:bg-red-50" title="Eliminar">✕</button>
+      </div>`).join('');
+  }
+
+  function mostrarEstado(msg, color) {
+    const el = document.getElementById('estado-conector');
+    const colores = { red: 'text-red-600', green: 'text-emerald-600', amber: 'text-amber-700' };
+    el.className = 'text-sm ml-2 flex-1 ' + (colores[color] || 'text-slate-500');
+    el.textContent = msg;
+  }
+
+  // Inicialización
+  renderTodo();
+</script>
+{% endblock %}

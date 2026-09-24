@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block titulo %}Sistema · Lógica Proposicional{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body data-pagina="{{ request.endpoint or '' }}" class="min-h-screen flex flex-col">
+
+  <nav class="bg-slate-900 border-b-4 border-black shadow-lg relative z-10">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+      <a href="{{ url_for('panel') }}" class="flex items-center gap-2 font-semibold">
+        <span class="inline-flex items-center justify-center w-9 h-9 border-2 border-black bg-indigo-500 text-2xl text-white shadow-[0_3px_0_#0b0c14]">∨</span>
+        <span class="pixel-titulo text-white hidden sm:inline">Lógica Proposicional</span>
+      </a>
+      <div class="flex items-center gap-1 text-sm">
+        <a href="{{ url_for('directo') }}"
+           class="nav-enlace {{ 'activo' if request.path.endswith('directo') else '' }}">Directo</a>
+        <a href="{{ url_for('inverso') }}"
+           class="nav-enlace {{ 'activo' if request.path.endswith('inverso') else '' }}">Inverso</a>
+        <a href="{{ url_for('ml') }}"
+           class="nav-enlace {{ 'activo' if request.path.endswith('ml') else '' }}">Asistente IA</a>
+        <span class="mx-1 text-slate-500">|</span>
+        <span class="px-2 text-slate-300">{{ session.get('usuario', '') }}</span>
+        <a href="{{ url_for('logout') }}" class="nav-enlace text-red-500 hover:text-white">Salir</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-8 relative z-10">
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% for categoria, mensaje in mensajes %}
+        <div class="flash-pixel mb-4 p-3 text-sm border
+                    {{ 'bg-red-50 text-red-700 border-red-300' if categoria == 'error'
+                       else 'bg-green-50 text-green-700 border-green-300' }}">
+          {{ mensaje }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="text-center text-xs text-slate-400 py-4 relative z-10">
+    Fórmulas Bien Formadas · Tablas de verdad · Machine Learning
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/asistente.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

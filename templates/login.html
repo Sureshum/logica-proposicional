@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso · Lógica Proposicional</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body data-pagina="login" class="min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-sm relative z-10">
+    <div class="caja p-8">
+
+      <div class="text-center mb-6">
+        <span class="inline-flex items-center justify-center w-14 h-14 border-4 border-black bg-indigo-500 text-white text-3xl shadow-[0_4px_0_#0b0c14]">∨</span>
+        <h1 class="text-2xl font-bold text-slate-800 mt-3">Lógica Proposicional</h1>
+        <p class="pixel-sub text-slate-500 mt-1">Inicie sesión para acceder al sistema</p>
+      </div>
+
+      {% if error %}
+        <div class="flash-pixel mb-4 p-3 bg-red-50 border border-red-300 text-red-700 text-sm">
+          {{ error }}
+        </div>
+      {% endif %}
+
+      <form method="post" autocomplete="off">
+        <label class="block text-slate-600 mb-1" for="usuario">Usuario</label>
+        <input id="usuario" name="usuario" type="text" required
+               class="w-full mb-4 px-3 py-2 border border-slate-300 focus:ring-2 focus:ring-indigo-400 outline-none"
+               placeholder="admin" value="{{ request.form.get('usuario', '') }}">
+
+        <label class="block text-slate-600 mb-1" for="clave">Contraseña</label>
+        <input id="clave" name="clave" type="password" required
+               class="w-full mb-6 px-3 py-2 border border-slate-300 focus:ring-2 focus:ring-indigo-400 outline-none"
+               placeholder="••••">
+
+        <button type="submit" class="btn-pixel btn-azul w-full">
+          Entrar al sistema
+        </button>
+      </form>
+
+      <p class="text-xs text-slate-400 mt-5 text-center">
+        Cuenta por defecto; usuario <strong>admin</strong> y contraseña <strong>1234</strong>
+      </p>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/asistente.js') }}"></script>
+</body>
+</html>

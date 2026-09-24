@@ -52,7 +52,7 @@
 
     <div class="grid lg:grid-cols-2 gap-6">
 
-      <!-- Clasificador de FBF -->
+
       <section class="caja p-6">
         <h2 class="pixel-titulo text-slate-700 mb-1">Clasificador de FBF</h2>
         <p class="text-xs text-slate-400 mb-2">
@@ -95,7 +95,7 @@
         </div>
       </section>
 
-      <!-- NLP: español -> FBF -->
+
       <section class="caja p-6">
         <h2 class="pixel-titulo text-slate-700 mb-1">Lenguaje natural → FBF</h2>
         <p class="text-xs text-slate-400 mb-4">
@@ -141,13 +141,13 @@
   <script src="assets/js/app.js"></script>
   <script src="assets/js/asistente.js"></script>
   <script>
-    // ------------------------- estado del modelo -------------------------
+
     function cargarEstado() {
       const elEstado = document.getElementById('m-estado');
       const detalle = document.getElementById('m-detalle');
       elEstado.textContent = 'Generando datos y entrenando el modelo en tu navegador…';
 
-      // Dejamos pintar el mensaje antes de bloquear con el entrenamiento.
+
       setTimeout(function () {
         try {
           const info = ML.info();
@@ -193,7 +193,7 @@
       }, 30);
     }
 
-    // ---------------------------- clasificador ---------------------------
+
     function insertarSimbolo(simbolo) {
       const el = document.getElementById('clf-formula');
       const pos = el.selectionStart || el.value.length;
@@ -242,7 +242,7 @@
       }).join('');
     }
 
-    // ------------------------------ NLP --------------------------------
+
     function traducir() {
       ocultarError('nlp-error');
       const oracion = document.getElementById('nlp-oracion').value.trim();
@@ -267,13 +267,13 @@
       claseEl.innerHTML = `Clase predicha por el modelo: <strong class="${colorDeClase(res.clase)} px-2 py-0.5">${esc(res.clase)}</strong>`;
     }
 
-    // --------------------------- re-entrenar -----------------------------
+
     function reentrenar() {
       const btn = document.getElementById('btn-reentrenar');
       btn.disabled = true;
       btn.textContent = 'Entrenando…';
       setTimeout(function () {
-        try { ML.reentrenar(1500); } catch (e) { /* se muestra en el estado */ }
+        try { ML.reentrenar(1500); } catch (e) {  }
         btn.disabled = false;
         btn.textContent = '↻ Re-entrenar modelo';
         document.getElementById('clf-resultado').classList.add('hidden');
@@ -281,7 +281,7 @@
       }, 30);
     }
 
-    // --------------------------- utilidades ------------------------------
+
     function colorDeClase(clase) {
       const mapa = {
         'Tautología': 'bg-emerald-100 text-emerald-700',
@@ -308,6 +308,6 @@
     }
 
     cargarEstado();
-  </script>
+</script>
 </body>
 </html>

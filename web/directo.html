@@ -129,11 +129,8 @@
   <script src="assets/js/app.js"></script>
   <script src="assets/js/asistente.js"></script>
   <script>
-    // ---------------------------------------------------------------------
-    // Módulo Directo · versión 100% navegador.
-    // La lógica que antes hacía el servidor Flask ahora la hacen los
-    // puertos JavaScript (LogicaParser, Generador).
-    // ---------------------------------------------------------------------
+
+
     let idTarjeta = 0;
     let tarjetas = [];
     let selA = null;
@@ -167,7 +164,7 @@
       return obtenerTarjeta(selA) || tarjetas[0] || null;
     }
 
-    // -------------------------- selección A / B --------------------------
+
     function asignarA(id) {
       selA = id;
       if (selB === id) { selB = null; }
@@ -188,7 +185,7 @@
       renderTodo();
     }
 
-    // ---------------------------- operaciones ----------------------------
+
     function agregarAtomo() {
       const h = herramientas();
       const simbolo = document.getElementById('nuevo-simbolo').value.trim();
@@ -284,7 +281,7 @@
       renderTodo();
     }
 
-    // ----------------------------- render ---------------------------------
+
     function renderTodo() {
       renderChips();
       renderResultado();
@@ -343,6 +340,6 @@
     }
 
     renderTodo();
-  </script>
+</script>
 </body>
 </html>

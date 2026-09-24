@@ -1,7 +1,4 @@
-/* =========================================================================
-   ml/nlp.py → JavaScript
-   Traducción de lenguaje natural (español) a FBF simbólica mediante reglas.
-   ========================================================================= */
+
 "use strict";
 
 (function () {
@@ -92,35 +89,35 @@
     oracion = oracion.replace(/\s+/g, " ").trim();
     if (!oracion) throw new LP.FBFError("No se encontró contenido para traducir.");
 
-    // 1. Paréntesis explícitos.
+
     if (oracion.charAt(0) === "(" && oracion.charAt(oracion.length - 1) === ")" && balanceada(oracion)) {
       return "(" + traducir(oracion.slice(1, -1)) + ")";
     }
 
-    // 2. Bicondicional: "p si y solo si q".
+
     var pieza = dividir(oracion, "↔");
     if (pieza) return "(" + traducir(pieza[0]) + " ↔ " + traducir(pieza[1]) + ")";
 
-    // 3. Condicional: "si A entonces B".
+
     var m = oracion.match(/^si\s+(.+?)\s+entonces\s+(.+)$/);
     if (m) return "(" + traducir(m[1]) + " → " + traducir(m[2]) + ")";
 
-    // 3b. Condicional ya materializado.
+
     pieza = dividir(oracion, "→");
     if (pieza) return "(" + traducir(pieza[0]) + " → " + traducir(pieza[1]) + ")";
 
-    // 4. Disyunción.
+
     pieza = dividir(oracion, "∨");
     if (pieza) return "(" + traducir(pieza[0]) + " ∨ " + traducir(pieza[1]) + ")";
 
-    // 5. Conjunción.
+
     pieza = dividir(oracion, "∧");
     if (pieza) return "(" + traducir(pieza[0]) + " ∧ " + traducir(pieza[1]) + ")";
 
-    // 6. Negación: "no A".
+
     if (oracion.startsWith("no ")) return "(¬ " + traducir(oracion.slice(3)) + ")";
 
-    // 7. Caso base: variable.
+
     if (esAtomoValido(oracion)) return oracion;
 
     var sobrantes = oracion.split(/\s+/).filter(function (t) { return !esAtomoValido(t); });
@@ -143,7 +140,7 @@
     if (!texto) throw new LP.FBFError("La oración quedó vacía tras la normalización.");
 
     var fbf = traducir(texto.replace(/[ .]+$/g, ""));
-    LP.parsear(fbf); // validación final con el parser real
+    LP.parsear(fbf);
     return fbf;
   }
 

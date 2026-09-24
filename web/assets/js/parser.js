@@ -1,8 +1,4 @@
-/* =========================================================================
-   logica/parser.py → JavaScript
-   Parser descendente recursivo de Fórmulas Bien Formadas (FBF).
-   Convierte texto en un AST (AtomNode / NegNode / BinNode).
-   ========================================================================= */
+
 "use strict";
 
 (function () {
@@ -31,7 +27,7 @@
   FBFError.prototype = Object.create(Error.prototype);
   FBFError.prototype.constructor = FBFError;
 
-  // ------------------------- Nodos del AST -------------------------
+
   function AtomNode(nombre) { this.nombre = nombre; }
   function NegNode(hijo) { this.hijo = hijo; }
   function BinNode(op, izq, der) { this.op = op; this.izq = izq; this.der = der; }
@@ -64,7 +60,7 @@
     return tokens;
   }
 
-  // --------------------- Parser descendente recursivo ---------------------
+
   function Parser(tokens) {
     this.t = tokens;
     this.pos = 0;
@@ -141,7 +137,7 @@
     try { parsear(texto); return true; } catch (e) { return false; }
   }
 
-  // ------------------------- Serialización -------------------------
+
   function cadenaInterna(n) {
     if (n instanceof AtomNode) return n.nombre;
     if (n instanceof NegNode) {
@@ -199,7 +195,7 @@
     return total;
   }
 
-  // ------------------------- Lectura en español -------------------------
+
   function renderEs(n, nombres) {
     nombres = nombres || {};
     if (n instanceof AtomNode) return nombres.hasOwnProperty(n.nombre) ? nombres[n.nombre] : n.nombre;
@@ -207,7 +203,7 @@
     return NOMBRE_OPERADORES[n.op](renderEs(n.izq, nombres), renderEs(n.der, nombres));
   }
 
-  // ------------------------- HTML del árbol -------------------------
+
   function escapa(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];

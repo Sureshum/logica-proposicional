@@ -1,8 +1,4 @@
-/* =========================================================================
-   logica/semantica.py → JavaScript
-   Evaluación semántica: tablas de verdad y clasificación
-   (Tautología / Contradicción / Contingencia).
-   ========================================================================= */
+
 "use strict";
 
 (function () {
@@ -22,13 +18,13 @@
     switch (n.op) {
       case "∧": return izq && der;
       case "∨": return izq || der;
-      case "→": return (!izq) || der; // el condicional solo falla con V→F
+      case "→": return (!izq) || der;
       case "↔": return izq === der;
     }
     throw new Error("Operador desconocido: " + n.op);
   }
 
-  // Combinaciones de valores: mismo orden que itertools.product (V...V → F...F).
+
   function combinaciones(atoms) {
     var filas = [];
     var total = Math.pow(2, atoms.length);

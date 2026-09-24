@@ -1,18 +1,10 @@
-/* =========================================================================
-   ASISTENTE VIRTUAL "BÓOLE"
-   -------------------------------------------------------------------------
-   Personaje píxel flotante (abajo a la derecha) que explica, en cada
-   página, cómo funciona el sistema. Detecta la ruta actual mediante el
-   atributo `data-pagina` del <body> y muestra una guía paso a paso más
-   consejos rápidos interactivos.
-   ========================================================================= */
 
 (function () {
   "use strict";
 
   var PAGINA = (document.body && document.body.getAttribute("data-pagina")) || "";
 
-  /* ------------------- Guión por página (en español) ------------------- */
+
   var GUION = {
     login: {
       saludo: "¡Hola! Soy BÓOLE, tu guía 8-bits. Esta es la puerta de acceso del sistema.",
@@ -145,7 +137,7 @@
   var guion = GUION[PAGINA] || porDefecto;
   var encendido = /^login$/.test(PAGINA) ? false : true;
 
-  /* --------------------------- Construcción UI --------------------------- */
+
   function construir() {
     var caja = document.createElement("div");
     caja.className = "asiste-caja";
@@ -160,7 +152,7 @@
       "</button>";
     document.body.appendChild(caja);
 
-    /* Panel de ayuda. */
+
     var panel = document.createElement("aside");
     panel.className = "asiste-panel";
     panel.setAttribute("aria-hidden", "true");
@@ -186,7 +178,7 @@
       "BOOLE v1.0 - presiona mi cabeza para alternar</div>";
     document.body.appendChild(panel);
 
-    /* Lista de pasos. */
+
     var pasos = document.getElementById("asiste-pasos");
     guion.pasos.forEach(function (paso, i) {
       var fila = document.createElement("div");
@@ -195,7 +187,7 @@
       pasos.appendChild(fila);
     });
 
-    /* Consejos clicables. */
+
     var chips = document.getElementById("asiste-consejos");
     guion.consejos.forEach(function (c) {
       var b = document.createElement("button");
@@ -208,7 +200,7 @@
       chips.appendChild(b);
     });
 
-    /* Eventos: botón flotante, cierre y aviso. */
+
     var btn = document.getElementById("asiste-btn");
     var aviso = document.getElementById("asiste-aviso");
     var cerrar = document.getElementById("asiste-cerrar");
@@ -233,7 +225,7 @@
     cerrar.addEventListener("click", cerrarPanel);
     if (aviso) aviso.addEventListener("click", abrir);
 
-    /* Si el usuario lleva unos segundos sin interactuar, mostrar el panel. */
+
     if (encendido) {
       setTimeout(function () {
         if (!panel.classList.contains("visible")) abrir();
@@ -242,7 +234,7 @@
     }
   }
 
-  /* ------------------------- Efecto máquina de escribir ------------------------- */
+
   function escribirTexto(texto) {
     var el = document.getElementById("asiste-burbuja");
     el.innerHTML = "";

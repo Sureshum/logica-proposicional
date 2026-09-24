@@ -1,8 +1,4 @@
-/* =========================================================================
-   ml/features.py + ml/dataset.py + ml/modelo.py → JavaScript
-   Clasificador k-NN de FBF (Tautología / Contradicción / Contingencia)
-   que corre 100% en el navegador. El dataset se genera al primer uso.
-   ========================================================================= */
+
 "use strict";
 
 (function () {
@@ -23,7 +19,7 @@
   ML.FRACCION_PRUEBA = 0.2;
   ML.NO_DEFECTO = 1000;
 
-  // ------------------------- Características -------------------------
+
   function conteoOperadores(n) {
     var conteo = { "¬": 0, "∧": 0, "∨": 0, "→": 0, "↔": 0 };
     function rec(x) {
@@ -81,7 +77,7 @@
     ].map(Number);
   }
 
-  // --------------------------- Dataset (X, y) ---------------------------
+
   function convertir(formulas) {
     var X = [], y = [];
     formulas.forEach(function (item) {
@@ -97,7 +93,7 @@
     var rnd = G.alea(semilla == null ? 42 : semilla);
     var orden = [];
     for (var i = 0; i < datos.length; i++) orden.push(i);
-    // barajado reproducible
+
     for (var j = orden.length - 1; j > 0; j--) {
       var r = Math.floor(rnd() * (j + 1));
       var tmp = orden[j]; orden[j] = orden[r]; orden[r] = tmp;
@@ -122,7 +118,7 @@
     };
   }
 
-  // ------------------------------- k-NN -------------------------------
+
   function KNN(k) {
     this.k = k || 5;
     this.X = null;
@@ -176,7 +172,7 @@
     return [ML.CLASES[mejor], probs, this.k];
   };
 
-  // ------------------------------ Modelo ------------------------------
+
   function ModeloFBF() {
     this.modelo = null;
     this.nombre = "";
@@ -246,7 +242,7 @@
     };
   }
 
-  // --------------------------- Estado global ---------------------------
+
   var _modelo = null;
 
   function entrenar(n, semilla) {

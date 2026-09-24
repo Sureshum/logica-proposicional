@@ -1,8 +1,4 @@
-/* =========================================================================
-   logica/generador.py → JavaScript
-   Generador de Fórmulas Bien Formadas aleatorias (para practicar y para
-   construir el dataset de entrenamiento del clasificador ML).
-   ========================================================================= */
+
 "use strict";
 
 (function () {
@@ -19,7 +15,7 @@
 
   var OPERADORES_BINARIOS = ["∧", "∨", "→", "↔"];
 
-  // --------------------- RNG reproducible (mulberry32) ---------------------
+
   G.alea = function (semilla) {
     var a = semilla >>> 0;
     return function () {
@@ -49,7 +45,7 @@
 
   function sobreSubconjunto(rnd) {
     var n = 1 + Math.floor(rnd() * Math.min(3, G.ATOMOS_POOL.length));
-    // muestreo sin repetición de n elementos
+
     var pool = G.ATOMOS_POOL.slice();
     var res = [];
     for (var i = 0; i < n; i++) {
@@ -59,7 +55,7 @@
     return res;
   }
 
-  // Genera un AST cuya clase (en su mayoría) corresponde a la categoría.
+
   function generarForma(categoria, rnd) {
     var vars_semilla = sobreSubconjunto(rnd);
     var base = fbfAleatoria(vars_semilla, 1 + Math.floor(rnd() * 3), rnd);
@@ -68,10 +64,7 @@
     return base;
   }
 
-  /* ---------------------------------------------------------------
-     Proposición aleatoria para practicar (módulo Directo).
-     Devuelve { formula, descripciones, lectura }.
-     --------------------------------------------------------------- */
+
   G.proposicionAleatoria = function (simbolosPermitidos, rnd) {
     rnd = rnd || Math.random;
     var pool = simbolosPermitidos && simbolosPermitidos.length ? simbolosPermitidos.slice() : G.ATOMOS_POOL.slice();
@@ -112,10 +105,7 @@
     };
   };
 
-  /* ---------------------------------------------------------------
-     Dataset balanceado (≈ n/3 por clase), etiquetas según la
-     tabla de verdad real. Usado por el clasificador ML.
-     --------------------------------------------------------------- */
+
   G.generarInstancia = function (categoria, rnd) {
     var ast = generarForma(categoria, rnd);
     var cls = S.clasificar(ast);
@@ -151,7 +141,7 @@
 
     var resultado = [];
     Object.keys(acumulado).forEach(function (k) { resultado = resultado.concat(acumulado[k]); });
-    // Barajado Fisher–Yates
+
     for (var j = resultado.length - 1; j > 0; j--) {
       var r = Math.floor(rnd() * (j + 1));
       var tmp = resultado[j]; resultado[j] = resultado[r]; resultado[r] = tmp;

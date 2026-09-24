@@ -209,15 +209,6 @@ Public functions:
 | `_traducir(oracion)` | Translates **recursively**: first explicit parentheses, then ↔, then "if…then" →, then ∨, then ∧, then "not" → ¬. |
 | `parsear_asignaciones(texto)` | Converts `"p: Llueve, q: Hace frío"` into `{"p": "llueve", ...}`. |
 
-Rule sets in `oracion_a_fbf`:
-
-```
-"p si y solo si q"  →  p ↔ q
-"si p entonces q"   →  p → q
-"p solo si q"       →  p → q
-"y"  →  ∧        "o"  →  ∨        "no"  →  ¬
-```
-
 ---
 
 ## 6. `app.py` — the Flask server
@@ -250,27 +241,6 @@ All `/api/*` routes require a session (`@login_requerido`).
 
 ---
 
-## 7. Frontend (templates + static)
-
-- **`templates/base.html`**: base layout. Includes the pixel-art nav, flash
-  messages and the snippet that loads `asistente.js`. The `<body>` carries
-  `data-pagina="{{ request.endpoint }}"` so the assistant knows which page it is on.
-- **`static/css/estilos.css`**: full pixel-art theme ("Press Start 2P" and "VT323"
-  fonts, square corners, hard 8-bit shadows, dark retro palette) plus the BOOLE
-  assistant widget styles.
-- **`static/js/app.js`**: shared utilities:
-  - `esc(texto)` — escapes HTML to prevent injection when inserting dynamic content.
-  - `apiFetch(url, datos, metodo)` — `fetch` wrapper that sends JSON and returns the parsed response.
-- **`static/js/asistente.js`**: the **BOOLE** virtual assistant. It reads
-  `data-pagina`, opens a window at the bottom-right and explains **how to use the
-  current page** (steps + clickable tips), with a typewriter effect. Other relevant
-  pages:
-  - `directo.html` keeps all build state **in the browser** (`tarjetas`, `selA`,
-    `selB`) and calls the API to parse each operation.
-  - `inverso.html` and `ml.html` consume `/api/inverso` and `/api/ml/*`.
-
----
-
 ## 8. Browser-only version (`web/`) + GitHub Pages
 
 The same system also exists as a **100% static** version. Every logic module was
@@ -298,25 +268,6 @@ web/                          # static site root (what GitHub Pages serves)
         ├── app.js            # shared esc()
         └── asistente.js      # BOOLE assistant (same as Flask version)
 ```
-
-Each JS module binds to the global scope (`window.LogicaParser`, `window.Semantica`,
-`window.Generador`, `window.Nlp`, `window.ML`), so the pages call the exact
-functions the Flask API used to call on the server:
-
-| Flask API | Browser equivalent |
-|-----------|--------------------|
-| `POST /api/directo/agregar` | `directo.html` validates locally (same rules) and builds `AtomNode`s |
-| `POST /api/generar` | `Generador.proposicionAleatoria(...)` |
-| `POST /api/directo/negar` · `combinar` | `LogicaParser.parsear` + `NegNode`/`BinNode` + `aCadena`/`renderEs` |
-| `POST /api/inverso` | `Semantica.clasificar` + `tablaVerdadCompleta` + `tablaHtml` + `arbolHtml` |
-| `GET /api/ml/estado` · `POST /api/ml/clasificar` | `ML.info()` · `ML.predecir(formula)` |
-| `POST /api/ml/nlp` | `Nlp.oracionAFbf(...)` + `LogicaParser.parsear` + `ML.predecir(...)` |
-| `POST /api/ml/reentrenar` | `ML.reentrenar(n)` |
-
-The browser classifier is the **own k-NN (k=5, z-score normalized)** ported to
-JavaScript. Training is **lazy**: the first call to `ML.info()` / `ML.predecir()`
-generates a balanced dataset (≈1000 formulas, deterministic seed 42) and trains
-in memory. Nothing is sent to any server.
 
 ### Deploy to GitHub Pages
 
@@ -351,16 +302,6 @@ python app.py                          # server at http://localhost:5000
 - If you install `scikit-learn` you'll automatically use Random Forest.
 
 ---
-
-## 10. Ideas for studying / extending
-
-1. **Add new connectives** (NAND `↑`, NOR `↓`): touch `SIMBOLOS`, `NOMBRE_OPERADORES`,
-   the grammar in `parser.py` and `evaluar` in `semantica.py`.
-2. **Inference rules** (Modus Ponens, etc.): inspect the AST with `hijos()` and `parsear()`.
-3. **More ML features**: add a column to `NOMBRES_CARACTERISTICAS` and to
-   `extraer_caracteristicas`; the dataset and model adopt it automatically.
-4. **Reason with De Morgan**: transform the AST (`¬(p ∧ q)` → `¬p ∨ ¬q`) by walking
-   it with `hijos()` and rebuilding with `BinNode`/`NegNode`.
 
 <a href="https://github.com/Sureshum">
   <img src="https://media1.tenor.com/m/ki07u04jVnwAAAAC/gigi-murin-hololive-english.gif" width="100%" alt="Header Banner" />

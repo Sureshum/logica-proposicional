@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistente IA · Machine Learning</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/estilos.css">
+</head>
+<body data-pagina="ml" class="min-h-screen flex flex-col">
+
+  <nav class="bg-slate-900 border-b-4 border-black shadow-lg relative z-10">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+      <a href="index.html" class="flex items-center gap-2 font-semibold">
+        <span class="inline-flex items-center justify-center w-9 h-9 border-2 border-black bg-indigo-500 text-2xl text-white shadow-[0_3px_0_#0b0c14]">∨</span>
+        <span class="pixel-titulo text-white hidden sm:inline">Lógica Proposicional</span>
+      </a>
+      <div class="flex items-center gap-1 text-sm">
+        <a href="directo.html" class="nav-enlace">Directo</a>
+        <a href="inverso.html" class="nav-enlace">Inverso</a>
+        <a href="ml.html" class="nav-enlace activo">Asistente IA</a>
+        <span class="mx-1 text-slate-500">|</span>
+        <span class="px-2 text-slate-300">versión navegador</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-8 relative z-10">
+
+    <div class="flex items-start justify-between gap-4 mb-6">
+      <div>
+        <h1 class="pixel-titulo text-slate-800">Asistente inteligente (Machine Learning)</h1>
+        <p class="text-sm text-slate-500">
+          Clasifica proposiciones y traduce lenguaje natural a símbolos lógicos.
+        </p>
+      </div>
+      <button onclick="reentrenar()" id="btn-reentrenar" class="btn-pixel btn-gris shrink-0">
+        ↻ Re-entrenar modelo
+      </button>
+    </div>
+
+    <section id="panel-modelo" class="caja p-6 mb-6">
+      <h2 class="pixel-titulo text-slate-700 mb-3">Estado del modelo</h2>
+      <p id="m-estado" class="text-sm text-slate-500">
+        Cargando información del modelo… (el primer entrenamiento puede tardar unos segundos).
+      </p>
+      <div id="m-detalle" class="hidden mt-4 grid md:grid-cols-2 gap-6"></div>
+    </section>
+
+    <div class="grid lg:grid-cols-2 gap-6">
+
+      <!-- Clasificador de FBF -->
+      <section class="caja p-6">
+        <h2 class="pixel-titulo text-slate-700 mb-1">Clasificador de FBF</h2>
+        <p class="text-xs text-slate-400 mb-2">
+          Predice si la proposición es Tautología, Contradicción o Contingencia.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-1.5 mb-3">
+          <span class="text-[11px] text-slate-400 mr-1">Insertar:</span>
+          <button type="button" onclick="insertarSimbolo('¬')" class="btn-insertar" title="Negación (no)">¬</button>
+          <button type="button" onclick="insertarSimbolo('∧')" class="btn-insertar" title="Conjunción (intersección: y)">∧</button>
+          <button type="button" onclick="insertarSimbolo('∨')" class="btn-insertar" title="Disyunción (unión: o)">∨</button>
+          <button type="button" onclick="insertarSimbolo('→')" class="btn-insertar" title="Condicional (si…entonces)">→</button>
+          <button type="button" onclick="insertarSimbolo('↔')" class="btn-insertar" title="Bicondicional (si y solo si)">↔</button>
+          <button type="button" onclick="insertarSimbolo('(')" class="btn-insertar" title="Paréntesis de apertura">(</button>
+          <button type="button" onclick="insertarSimbolo(')')" class="btn-insertar" title="Paréntesis de cierre">)</button>
+        </div>
+
+        <input id="clf-formula" type="text"
+               class="texto-fbf w-full px-4 py-3 border border-slate-300 focus:ring-2 focus:ring-orange-400 outline-none"
+               placeholder="p ∨ ¬p" autocomplete="off">
+        <div class="flex flex-wrap items-center gap-1.5 mt-2">
+          <span class="text-[11px] text-slate-400 mr-1">Ejemplos:</span>
+          <button type="button" onclick="cargarEjemploClf('p ∨ ¬p')" class="btn-insertar">p ∨ ¬p</button>
+          <button type="button" onclick="cargarEjemploClf('p ∧ ¬p')" class="btn-insertar">p ∧ ¬p</button>
+          <button type="button" onclick="cargarEjemploClf('(p ∧ q) → r')" class="btn-insertar">(p ∧ q) → r</button>
+        </div>
+        <button onclick="clasificar()" class="btn-pixel btn-naranja mt-3">
+          Clasificar fórmula
+        </button>
+
+        <p id="clf-error" class="hidden mt-3 p-3 bg-red-50 border border-red-300 text-red-700 text-sm"></p>
+
+        <div id="clf-resultado" class="hidden mt-5">
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-slate-500">Clase predicha:</span>
+            <strong id="clf-clase" class="text-lg px-3 py-1 border-2 border-black bg-slate-50"></strong>
+          </div>
+          <div id="clf-asistida" class="mt-3 p-3 bg-slate-50 border border-slate-200 text-xs text-slate-500"></div>
+          <div id="clf-barras" class="mt-4 space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- NLP: español -> FBF -->
+      <section class="caja p-6">
+        <h2 class="pixel-titulo text-slate-700 mb-1">Lenguaje natural → FBF</h2>
+        <p class="text-xs text-slate-400 mb-4">
+          Convierte una oración en español a su representación simbólica (NLP por reglas
+          aprendidas + validación del parser).
+        </p>
+
+        <label class="block text-slate-500 mb-1" for="nlp-oracion">Oración</label>
+        <div class="grid gap-2">
+          <input id="nlp-oracion" type="text"
+                 class="w-full px-4 py-3 border border-slate-300 focus:ring-2 focus:ring-orange-400 outline-none"
+                 placeholder="Llueve y hace frío">
+          <input id="nlp-asignaciones" type="text"
+                 class="w-full px-4 py-2.5 border border-slate-300 focus:ring-2 focus:ring-orange-400 outline-none text-sm"
+                 placeholder='Asignaciones: p: Llueve, q: Hace frío'>
+        </div>
+        <button onclick="traducir()" class="btn-pixel btn-naranja mt-3">
+          Traducir a FBF
+        </button>
+
+        <p id="nlp-error" class="hidden mt-3 p-3 bg-red-50 border border-red-300 text-red-700 text-sm"></p>
+
+        <div id="nlp-resultado" class="hidden mt-5">
+          <div class="texto-fbf-grande" id="nlp-fbf"></div>
+          <p id="nlp-lectura" class="mt-1 text-sm text-slate-600 italic"></p>
+          <p id="nlp-clase" class="mt-3 text-sm"></p>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <footer class="text-center text-xs text-slate-400 py-4 relative z-10">
+    Fórmulas Bien Formadas · Tablas de verdad · Machine Learning
+  </footer>
+
+  <script src="assets/js/parser.js"></script>
+  <script src="assets/js/semantica.js"></script>
+  <script src="assets/js/generador.js"></script>
+  <script src="assets/js/nlp.js"></script>
+  <script src="assets/js/ml.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/asistente.js"></script>
+  <script>
+    // ------------------------- estado del modelo -------------------------
+    function cargarEstado() {
+      const elEstado = document.getElementById('m-estado');
+      const detalle = document.getElementById('m-detalle');
+      elEstado.textContent = 'Generando datos y entrenando el modelo en tu navegador…';
+
+      // Dejamos pintar el mensaje antes de bloquear con el entrenamiento.
+      setTimeout(function () {
+        try {
+          const info = ML.info();
+          const m = info.metricas || {};
+          elEstado.textContent = '';
+
+          const porClase = (m.por_clase || []).map(fila =>
+            `<tr>
+               <td class="px-2 py-1 text-slate-600">${esc(fila.clase)}</td>
+               <td class="px-2 py-1 text-center">${fila.vp}</td>
+               <td class="px-2 py-1 text-center">${(fila.precision * 100).toFixed(1)}%</td>
+               <td class="px-2 py-1 text-center">${(fila.recall * 100).toFixed(1)}%</td>
+               <td class="px-2 py-1 text-center">${(fila.f1 * 100).toFixed(1)}%</td>
+             </tr>`).join('');
+
+          const links = 'Esta versión es 100% navegador: se usa <strong>k-NN (k=5)</strong> ' +
+            'implementado en JavaScript. No hay servidor: el dataset se genera y el modelo ' +
+            'se entrena aquí mismo, en tu navegador.';
+
+          detalle.innerHTML = `
+            <div class="space-y-2 text-sm">
+              <p class="text-slate-700"><strong>Algoritmo:</strong> ${esc(m.algoritmo)}</p>
+              <p class="text-slate-700"><strong>Exactitud (validación):</strong> ${((m.exactitud || 0) * 100).toFixed(1)}%</p>
+              <p class="text-slate-700"><strong>Entrenamiento:</strong> ${m.n_entrenamiento} · <strong>Prueba:</strong> ${m.n_prueba}</p>
+              <p class="text-xs text-slate-500">&#128161; Cómo funciona: cada FBF se convierte en un vector de
+              características sintácticas (nº de conectivos, negaciones, profundidad, parejas A y ¬A…)
+              y el modelo aprende a asociar esos patrones con su clase real (tabla de verdad).</p>
+              <p class="text-xs text-slate-500">${links}</p>
+            </div>
+            <div class="overflow-x-auto text-xs">
+              <table class="tabla-verdad">
+                <thead><tr>
+                  <th>Clase</th><th>Ac.</th><th>Precisión</th><th>Recall</th><th>F1</th>
+                </tr></thead>
+                <tbody>${porClase}</tbody>
+              </table>
+            </div>`;
+
+          detalle.classList.remove('hidden');
+        } catch (err) {
+          elEstado.textContent = 'No se pudo preparar el modelo: ' + err.message;
+        }
+      }, 30);
+    }
+
+    // ---------------------------- clasificador ---------------------------
+    function insertarSimbolo(simbolo) {
+      const el = document.getElementById('clf-formula');
+      const pos = el.selectionStart || el.value.length;
+      el.value = el.value.slice(0, pos) + simbolo + el.value.slice(pos);
+      const nuevo = pos + simbolo.length;
+      el.focus();
+      el.setSelectionRange(nuevo, nuevo);
+    }
+
+    function cargarEjemploClf(formula) {
+      document.getElementById('clf-formula').value = formula;
+      clasificar();
+    }
+
+    function clasificar() {
+      ocultarError('clf-error');
+      const formula = document.getElementById('clf-formula').value.trim();
+      if (!formula) { return mostrarError('clf-error', 'Escribe una fórmula.'); }
+
+      let res;
+      try { res = ML.predecir(formula); }
+      catch (e) { return mostrarError('clf-error', e.message); }
+
+      const caja = document.getElementById('clf-resultado');
+      caja.classList.remove('hidden');
+
+      const claseEl = document.getElementById('clf-clase');
+      claseEl.textContent = res.clase;
+      claseEl.className = 'text-lg px-3 py-1 border-2 border-black ' + colorDeClase(res.clase);
+
+      document.getElementById('clf-asistida').textContent =
+        `Modelo k-NN (k=${res.k}) entrenado en el navegador. La predicción se ajusta a ` +
+        'características morfológicas; usa la tabla de verdad para verificación exacta.';
+
+      const probs = res.probabilidades || {};
+      document.getElementById('clf-barras').innerHTML = Object.keys(probs).map(c => {
+        const pct = Math.round((probs[c] || 0) * 100);
+        return `
+          <div class="flex items-center gap-2 text-xs">
+            <span class="w-28 text-slate-600">${esc(c)}</span>
+            <div class="flex-1 h-3 border-2 border-black bg-slate-100 overflow-hidden">
+              <div class="h-full ${colorBarra(c)}" style="width:${pct}%"></div>
+            </div>
+            <span class="w-10 text-right text-slate-500 font-semibold">${pct}%</span>
+          </div>`;
+      }).join('');
+    }
+
+    // ------------------------------ NLP --------------------------------
+    function traducir() {
+      ocultarError('nlp-error');
+      const oracion = document.getElementById('nlp-oracion').value.trim();
+      const asignaciones = document.getElementById('nlp-asignaciones').value.trim();
+      if (!oracion) { return mostrarError('nlp-error', 'Escribe una oración.'); }
+
+      let simbolos, fbf, ast, res;
+      try {
+        simbolos = Nlp.parsearAsignaciones(asignaciones);
+        fbf = Nlp.oracionAFbf(oracion, simbolos);
+        ast = LogicaParser.parsear(fbf);
+        res = ML.predecir(fbf);
+      } catch (e) { return mostrarError('nlp-error', e.message); }
+
+      const caja = document.getElementById('nlp-resultado');
+      caja.classList.remove('hidden');
+
+      document.getElementById('nlp-fbf').textContent = fbf;
+      document.getElementById('nlp-lectura').textContent = `Se lee: ${LogicaParser.renderEs(ast, simbolos)}`;
+
+      const claseEl = document.getElementById('nlp-clase');
+      claseEl.innerHTML = `Clase predicha por el modelo: <strong class="${colorDeClase(res.clase)} px-2 py-0.5">${esc(res.clase)}</strong>`;
+    }
+
+    // --------------------------- re-entrenar -----------------------------
+    function reentrenar() {
+      const btn = document.getElementById('btn-reentrenar');
+      btn.disabled = true;
+      btn.textContent = 'Entrenando…';
+      setTimeout(function () {
+        try { ML.reentrenar(1500); } catch (e) { /* se muestra en el estado */ }
+        btn.disabled = false;
+        btn.textContent = '↻ Re-entrenar modelo';
+        document.getElementById('clf-resultado').classList.add('hidden');
+        cargarEstado();
+      }, 30);
+    }
+
+    // --------------------------- utilidades ------------------------------
+    function colorDeClase(clase) {
+      const mapa = {
+        'Tautología': 'bg-emerald-100 text-emerald-700',
+        'Contradicción': 'bg-red-100 text-red-700',
+        'Contingencia': 'bg-amber-100 text-amber-700'
+      };
+      return mapa[clase] || 'bg-slate-100 text-slate-600';
+    }
+    function colorBarra(clase) {
+      const mapa = {
+        'Tautología': 'bg-emerald-500',
+        'Contradicción': 'bg-red-500',
+        'Contingencia': 'bg-amber-400'
+      };
+      return mapa[clase] || 'bg-slate-400';
+    }
+    function mostrarError(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+    function ocultarError(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    cargarEstado();
+  </script>
+</body>
+</html>

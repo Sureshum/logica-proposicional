@@ -1,0 +1,717 @@
+/* =========================================================================
+   SISTEMA DE LÓGICA PROPOSICIONAL · TEMA PIXEL ART
+   =========================================================================
+   Capa de presentación inspirada en las consolas retro (NES / Game Boy):
+
+     * Tipografías pixeladas ("Press Start 2P" para títulos, "VT323" para
+       el texto de lectura).
+     * Esquinas rectas, sombras duras, bordes gruesos y escalonados.
+     * Paleta oscura retro: azul noche, verdines, ámbar y rojo píxel.
+
+   Esta hoja incluye el widget del ASISTENTE VIRTUAL "BÓOLE" (abajo a la
+   derecha) que explica cómo usar la página en la que te encuentras.
+   ========================================================================= */
+
+/* ------------------------- Paleta y tipografías ------------------------- */
+:root {
+  --pix-fondo:      #171a29;   /* azul noche de fondo            */
+  --pix-fondo-nav:  #0d0f1a;   /* barra superior                 */
+  --pix-tarjeta:    #232741;   /* fondo de las tarjetas          */
+  --pix-tarjeta-2:  #2a2f4d;   /* resalte secundario             */
+  --pix-borde:      #0b0c14;   /* borde/sombra duro              */
+  --pix-texto:      #ecebf4;   /* texto principal                */
+  --pix-texto-2:    #c3c7dc;   /* texto secundario               */
+  --pix-texto-3:    #8f96b5;   /* texto desvanecido              */
+  --pix-verde:      #3eda8b;   /* verde píxel                    */
+  --pix-verde-osc:  #1f8f55;
+  --pix-ambar:      #ffb43d;   /* ámbar píxel                    */
+  --pix-rosa:       #ff6bd6;
+  --pix-rojo:       #ff5c6e;
+  --pix-indigo:     #7d7bff;
+  --pix-naranja:    #ff9a52;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "VT323", "Consolas", monospace;
+  font-size: 1.05rem;                /* VT323 necesita cuerpo grande */
+  line-height: 1.4;
+  color: var(--pix-texto);
+  background-color: var(--pix-fondo);
+  background-image:
+    radial-gradient(circle at 3px 3px, rgba(255,255,255,0.035) 2px, transparent 2.5px);
+  background-size: 26px 26px;
+  letter-spacing: 0.03em;
+}
+
+/* Cabeceras y elementos de interfaz con tipografía de 8 bits. */
+h1, h2, h3, h4,
+label, thead,
+button, .btn-pixel,
+.nav-enlace,
+.pixel-titulo, .pixel-sub, .pixel-mensaje,
+.pixel-etiqueta {
+  font-family: "Press Start 2P", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+h1 { font-size: 0.78rem !important; line-height: 1.8 !important; }
+h2 { font-size: 0.68rem !important; line-height: 1.8 !important; }
+h3 { font-size: 0.6rem !important;  line-height: 1.7 !important; }
+label { font-size: 0.55rem !important; }
+.pixel-titulo { font-size: 0.62rem; }
+.pixel-sub { font-size: 0.5rem; }
+
+p { margin: 0.35rem 0; }
+
+::selection { background: var(--pix-ambar); color: #0b0c14; }
+
+/* ---- Ajustes globales de Tailwind: esquinas, sombras y fondo oscuro ---- */
+.rounded-lg, .rounded-xl, .rounded-2xl, .rounded-full {
+  border-radius: 0 !important;
+}
+
+.shadow, .shadow-sm, .shadow-lg, .shadow-2xl {
+  box-shadow: 0 5px 0 0 var(--pix-borde) !important;
+}
+
+/* Alternancia de texto claro sobre el fondo oscuro. */
+.text-slate-900, .text-slate-800, .text-slate-700 { color: var(--pix-texto) !important; }
+.text-slate-600, .text-slate-500, .text-slate-300  { color: var(--pix-texto-2) !important; }
+.text-slate-400 { color: var(--pix-texto-3) !important; }
+.text-slate-200, .text-slate-100, .text-slate-50   { color: var(--pix-texto) !important; }
+
+.text-red-500, .text-red-600, .text-red-700 { color: var(--pix-rojo) !important; }
+.text-amber-400 { color: var(--pix-ambar) !important; }
+.text-green-700, .text-emerald-600, .text-emerald-700 { color: var(--pix-verde) !important; }
+.text-amber-700, .text-amber-600 { color: var(--pix-ambar) !important; }
+.text-indigo-600, .text-violet-600 { color: var(--pix-indigo) !important; }
+.text-fuchsia-600, .text-pink-600 { color: var(--pix-rosa) !important; }
+.text-orange-600, .text-orange-700 { color: var(--pix-naranja) !important; }
+
+/* Fondos de tarjeta / panel. */
+.bg-white, .bg-white\/95 {
+  background-color: var(--pix-tarjeta) !important;
+}
+.bg-slate-900 { background-color: var(--pix-fondo-nav) !important; }
+.bg-slate-800 { background-color: #1a1e33 !important; }
+.bg-slate-700 { background-color: var(--pix-tarjeta-2) !important; }
+.bg-slate-50  { background-color: var(--pix-tarjeta-2) !important; }
+.bg-slate-100 { background-color: var(--pix-tarjeta-2) !important; }
+.bg-indigo-50 { background-color: rgba(125,123,255,0.14) !important; }
+.bg-red-50    { background-color: rgba(255,92,110,0.14)  !important; }
+.bg-green-50  { background-color: rgba(62,218,139,0.12)  !important; }
+.bg-emerald-100 { background-color: rgba(62,218,139,0.22) !important; }
+.bg-red-100   { background-color: rgba(255,92,110,0.22)  !important; }
+.bg-amber-100 { background-color: rgba(255,180,61,0.22)  !important; }
+
+/* Bordes de formulario y cajas. */
+.border, .border-2 {
+  border-color: var(--pix-borde) !important;
+}
+.border-slate-200 { border-color: #3a4062 !important; }
+.border-slate-300 { border-color: #444b70 !important; }
+.border-indigo-200 { border-color: #4c5196 !important; }
+.border-indigo-300 { border-color: #5f66c9 !important; }
+.border-emerald-300 { border-color: #2b8f60 !important; }
+.border-red-300 { border-color: rgba(255,92,110,0.55) !important; }
+.border-green-300 { border-color: rgba(62,218,139,0.55) !important; }
+
+/* Barras de probabilidad (usadas por el módulo ML). */
+.bg-emerald-500 { background-color: #3eda8b !important; }
+.bg-red-500     { background-color: #ff5c6e !important; }
+.bg-amber-400   { background-color: #ffb43d !important; }
+.bg-slate-400   { background-color: #7d849f !important; }
+
+/* Anillos de foco/selección estilo píxel. */
+.ring-2 { box-shadow: none !important; }
+.ring-indigo-400 { box-shadow: inset 0 0 0 2px var(--pix-borde), inset 0 0 0 4px #6d6bff !important; }
+.ring-emerald-400 { box-shadow: inset 0 0 0 2px var(--pix-borde), inset 0 0 0 4px #3eda8b !important; }
+
+/* Botones de color de Tailwind: les añadimos el bisel de 8 bits. */
+.bg-indigo-600, .bg-emerald-600, .bg-orange-600, .bg-fuchsia-600,
+.bg-slate-700, .bg-slate-800, .bg-red-600\/80, .bg-red-600,
+.bg-indigo-500, .bg-green-600 {
+  border: 2px solid var(--pix-borde);
+  border-radius: 0;
+  box-shadow: inset 0 3px 0 rgba(255,255,255,0.16), 0 4px 0 0 var(--pix-borde);
+}
+.bg-indigo-500, .bg-indigo-600 { background-color: #5a56d6 !important; }
+.bg-emerald-600, .bg-green-600  { background-color: #23a25f !important; }
+.bg-orange-600                  { background-color: #e07b34 !important; }
+.bg-fuchsia-600                 { background-color: #d03f9d !important; }
+.bg-red-600, .bg-red-600\/80    { background-color: #d13a4e !important; }
+.bg-slate-700                   { background-color: #3a4166 !important; }
+.bg-slate-800                   { background-color: #232744 !important; }
+
+/* Foco universal nítido (píxel ámbar). */
+*:focus { outline: 3px solid var(--pix-ambar); outline-offset: -3px; }
+
+/* --------------------------- Entradas de texto -------------------------- */
+input[type="text"], input[type="password"] {
+  border-radius: 0;
+  background-color: #171a2c;
+  border: 2px solid #3e4566;
+  color: var(--pix-texto);
+  font-family: "VT323", "Consolas", monospace;
+  font-size: 1rem;
+  padding: 0.5rem 0.65rem;
+  caret-color: var(--pix-ambar);
+}
+input::placeholder { color: #6d7390; }
+
+/* ------------------------------ Componentes ----------------------------- */
+
+/* Tarjetas de sección principales (sustituyen a bg-white rounded shadow). */
+.caja {
+  background-color: var(--pix-tarjeta);
+  border: 2px solid var(--pix-borde);
+  border-radius: 0;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.055), 0 5px 0 0 var(--pix-borde);
+}
+
+/* Botones píxel (con sus variantes de color). */
+.btn-pixel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 0;
+  border: 2px solid var(--pix-borde);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.55rem !important;
+  line-height: 1.6;
+  cursor: pointer;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.35);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,0.18), 0 4px 0 0 var(--pix-borde);
+}
+.btn-pixel:hover { filter: brightness(1.15); }
+.btn-pixel:active {
+  transform: translateY(4px);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,0.18), 0 0 0 0 var(--pix-borde);
+}
+.btn-azul    { background: #5a56d6; }
+.btn-verde   { background: #23a25f; }
+.btn-rojo    { background: #d13a4e; }
+.btn-naranja { background: #e07b34; }
+.btn-rosa    { background: #d03f9d; }
+.btn-gris    { background: #3a4166; }
+.btn-ambar   { background: var(--pix-ambar); color: #171a2c; text-shadow: none; }
+
+/* Navegación superior. */
+.nav-enlace {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.5rem !important;
+  color: var(--pix-texto-2);
+  text-decoration: none;
+  border: 2px solid transparent;
+  transition: none;
+}
+.nav-enlace:hover { color: #fff; background: #232744; }
+.nav-enlace.activo {
+  color: #171a2c;
+  background: var(--pix-ambar);
+  box-shadow: inset 0 0 0 2px #0b0c14;
+  text-shadow: none;
+}
+
+/* Tipografía para fórmulas lógicas (serif cursiva clásica -> píxel). */
+.texto-fbf {
+  font-family: "VT323", "Cambria", serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  color: #e6e4ff;
+}
+.texto-fbf-grande {
+  font-family: "VT323", "Cambria", serif;
+  font-style: italic;
+  font-size: 1.45rem;
+  letter-spacing: 0.04em;
+  color: #e6e4ff;
+}
+
+/* --------------------- Tarjetas del panel principal ---------------------- */
+.tarjeta-modulo {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  padding: 1.3rem;
+  border: 3px solid var(--pix-borde);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.14), 0 6px 0 0 var(--pix-borde);
+  transition: transform 0.08s ease;
+  text-decoration: none;
+}
+.tarjeta-modulo:hover {
+  transform: translateY(-3px);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.14), 0 9px 0 0 var(--pix-borde);
+}
+.tarjeta-modulo:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.14), 0 2px 0 0 var(--pix-borde);
+}
+.icono-modulo {
+  align-self: flex-start;
+  margin-bottom: 0.75rem;
+  padding: 0.35rem 0.6rem;
+  border: 2px solid var(--pix-borde);
+  background: rgba(11,12,20,0.35);
+  font-family: "VT323", Georgia, serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: #fff;
+}
+.icono-modulo::before { content: "█ "; color: var(--pix-ambar); }
+
+/* --------------------------- Chips y bloques ---------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 0;
+  font-size: 0.9rem;
+  border: 2px solid #4a5173;
+  background: #1a1e33;
+  color: var(--pix-texto-2);
+}
+.chip-a {
+  border-color: #6d6bff;
+  background: rgba(125,123,255,0.16);
+  color: #c7c4ff;
+}
+.chip-b {
+  border-color: #3eda8b;
+  background: rgba(62,218,139,0.14);
+  color: #aef2cf;
+}
+.chip.atom {
+  border-color: #3f6b57;
+  background: rgba(62,218,139,0.10);
+  color: var(--pix-verde);
+  font-family: "VT323", Georgia, serif;
+  font-style: italic;
+}
+
+/* Botones A/B de selección de tarjetas del constructor. */
+.badge-radio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0;
+  border: 2px solid #444b70;
+  background: #1a1e33;
+  color: var(--pix-texto-2);
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.6rem;
+  cursor: pointer;
+}
+.badge-radio:hover { background: #2a2f4d; }
+.badge-radio.badge-a.activo {
+  background: #5a56d6; border-color: var(--pix-borde); color: #fff;
+  box-shadow: 0 3px 0 0 var(--pix-borde);
+}
+.badge-radio.badge-b.activo {
+  background: #23a25f; border-color: var(--pix-borde); color: #fff;
+  box-shadow: 0 3px 0 0 var(--pix-borde);
+}
+
+/* --------------------------- Botones conectivos -------------------------- */
+.btn-conectivo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  width: 4.4rem;
+  padding: 0.5rem 0;
+  border-radius: 0;
+  border: 2px solid var(--pix-borde);
+  background: #3c3999;
+  color: #fff;
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.5rem;
+  cursor: pointer;
+  box-shadow: inset 0 3px 0 rgba(255,255,255,0.16), 0 4px 0 0 var(--pix-borde);
+}
+.btn-conectivo .texto-fbf { font-size: 1.15rem; }
+.btn-conectivo:hover {
+  background: #5a56d6;
+  transform: translateY(-2px);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,0.16), 0 6px 0 0 var(--pix-borde);
+}
+.btn-conectivo:active {
+  transform: translateY(4px);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,0.16), 0 0 0 0 var(--pix-borde);
+}
+
+/* Botones pequeños para insertar símbolos lógicos. */
+.btn-insertar {
+  min-width: 2.1rem;
+  height: 2.1rem;
+  padding: 0 0.4rem;
+  border-radius: 0;
+  border: 2px solid var(--pix-borde);
+  background: #59421a;
+  color: var(--pix-ambar);
+  font-family: "VT323", Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 3px 0 0 var(--pix-borde);
+}
+.btn-insertar:hover { background: #6b4f1e; color: #fff; }
+.btn-insertar:active { transform: translateY(3px); box-shadow: none; }
+
+/* ---------------------------- Tabla de verdad ---------------------------- */
+table.tabla-verdad {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.95rem;
+}
+table.tabla-verdad th,
+table.tabla-verdad td {
+  border: 2px solid var(--pix-borde);
+  padding: 0.3rem 0.6rem;
+  text-align: center;
+  font-family: "VT323", Georgia, serif;
+  font-style: italic;
+  white-space: nowrap;
+  background: #1d2137;
+}
+table.tabla-verdad thead th {
+  background: #333a63;
+  color: var(--pix-ambar);
+  font-style: normal;
+}
+p.aviso {
+  font-size: 0.9rem;
+  color: var(--pix-ambar);
+  background: #2a2214;
+  border: 2px solid #caa14a;
+  border-radius: 0;
+  padding: 0.5rem 0.75rem;
+}
+
+/* ------------------------------ Árbol sintáctico ------------------------- */
+.arbol ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+.arbol li { display: flex; flex-direction: column; align-items: center; }
+.arbol li li { margin-top: 0.6rem; }
+.nodo {
+  border: 2px solid var(--pix-borde);
+  background: #333a63;
+  color: #c7c4ff;
+  border-radius: 0;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.9rem;
+  font-family: "VT323", Georgia, serif;
+  font-style: italic;
+  white-space: nowrap;
+  box-shadow: 0 3px 0 0 var(--pix-borde);
+}
+.nodo.atom { background: #17382b; border-color: #2b8f60; color: var(--pix-verde); }
+.nodo.neg  { background: #4a2c16; border-color: #b06a22; color: var(--pix-ambar); }
+
+/* ------------------------- Mensajes / flashes ---------------------------- */
+.flash-pixel {
+  border-radius: 0;
+  border: 2px solid var(--pix-borde);
+  box-shadow: 0 3px 0 0 var(--pix-borde);
+}
+
+/* --------------------------------------------------------------------------
+   WIDGET DEL ASISTENTE VIRTUAL · BÓOLE
+   --------------------------------------------------------------------------
+   Personaje píxel fijo abajo a la derecha. Pulso su cabeza para abrir el
+   cuadro de ayuda que explica cómo funciona la página actual.
+   ------------------------------------------------------------------------- */
+
+.asiste-caja {
+  position: fixed;
+  z-index: 9999;
+  bottom: 18px;
+  right: 18px;
+  display: flex;
+  flex-direction: column;
+  font-family: "VT323", monospace;
+}
+
+/* --- Burbuja de saludo junto al personaje podríamos mostrarla en el botón --- */
+.asiste-btn {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin-left: auto;
+  border: 4px solid var(--pix-borde);
+  border-radius: 0;
+  background: #2f8a58;
+  cursor: pointer;
+  box-shadow: 0 6px 0 0 var(--pix-borde), inset 0 4px 0 rgba(255,255,255,0.18);
+  animation: asiste-flotar 2.4s ease-in-out infinite;
+}
+.asiste-btn:hover { filter: brightness(1.12); }
+.asiste-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 0 var(--pix-borde); }
+
+/* Antena. */
+.asiste-btn::before {
+  content: "";
+  position: absolute;
+  top: -16px; left: 50%;
+  width: 8px; height: 16px;
+  margin-left: -4px;
+  background: #1a1e33;
+  border: 2px solid var(--pix-borde);
+}
+.asiste-btn::after {
+  content: "";
+  position: absolute;
+  top: -30px; left: 50%;
+  width: 20px; height: 20px;
+  margin-left: -10px;
+  background: var(--pix-ambar);
+  border: 3px solid var(--pix-borde);
+  border-radius: 0;
+  animation: asiste-parpadeo 1.2s steps(2, start) infinite;
+}
+
+/* Cara del robot construida con capas (ojos cuadrados). */
+.asiste-cara {
+  position: absolute;
+  inset: 26px 16px 20px 16px;
+  background: var(--pix-borde);
+  box-shadow: inset 0 0 0 6px #173a26;
+}
+.asiste-ojo {
+  position: absolute;
+  top: 14px;
+  width: 14px; height: 20px;
+  background: #fff;
+  box-shadow: inset 0 0 0 4px var(--pix-borde);
+}
+.asiste-ojo.izq { left: 10px; }
+.asiste-ojo.der { right: 10px; }
+.asiste-boca {
+  position: absolute;
+  bottom: 8px; left: 50%;
+  width: 30px; height: 8px;
+  margin-left: -15px;
+  background: #2d0f13;
+  border: 2px solid var(--pix-borde);
+  box-shadow: inset 0 -3px 0 0 #0b0c14;
+}
+
+/* Icono de cierre cuando el panel está abierto. */
+.asiste-btn.abierto .asiste-ojo.izq span::after { content: ""; }
+.asiste-btn.abierto .asiste-cara { background: var(--pix-rojo); box-shadow: inset 0 0 0 6px #43141c; }
+
+/* Notificación "pulsa aquí". */
+.asiste-aviso {
+  position: absolute;
+  bottom: 104px; right: 0;
+  max-width: 200px;
+  padding: 6px 9px;
+  background: var(--pix-ambar);
+  color: #171a2c;
+  border: 3px solid var(--pix-borde);
+  font-family: "VT323", monospace;
+  font-size: 0.98rem;
+  line-height: 1.2;
+  text-align: right;
+}
+.asiste-aviso::after {
+  content: "";
+  position: absolute;
+  bottom: -12px; right: 28px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid var(--pix-ambar);
+  filter: drop-shadow(2px 2px 0 var(--pix-borde));
+}
+
+/* --- Panel de ayuda --- */
+.asiste-panel {
+  position: fixed;
+  z-index: 10000;
+  bottom: 132px;
+  right: 22px;
+  width: 340px;
+  max-height: min(500px, 72vh);
+  display: none;
+  flex-direction: column;
+  background: #1d2137;
+  border: 3px solid var(--pix-borde);
+  box-shadow: 0 7px 0 0 var(--pix-borde), inset 0 0 0 2px rgba(255,255,255,0.05);
+}
+.asiste-panel.visible { display: flex; }
+.asiste-cerrar {
+  position: absolute;
+  top: 8px; right: 8px;
+  border: 2px solid var(--pix-borde);
+  background: var(--pix-rojo);
+  color: #fff;
+  width: 28px; height: 28px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.6rem;
+  cursor: pointer;
+  box-shadow: 0 3px 0 0 var(--pix-borde);
+}
+.asiste-cerrar:active { transform: translateY(3px); box-shadow: none; }
+
+.asiste-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: #2f8a58;
+  border-bottom: 3px solid var(--pix-borde);
+}
+.asiste-titulo .mini {
+  width: 40px; height: 40px;
+  flex: none;
+  background: var(--pix-borde);
+  box-shadow: inset 0 0 0 4px #1f6b44;
+  position: relative;
+}
+.asiste-titulo .mini i {
+  position: absolute;
+  top: 10px; width: 6px; height: 10px;
+  background: #fff;
+  box-shadow: 2px 2px 0 #0b0c14;
+}
+.asiste-titulo .mini i + i { right: 7px; }
+.asiste-titulo .mini i:first-child { left: 7px; }
+.asiste-titulo b {
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.65rem;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+}
+.asiste-titulo .estado {
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.5rem;
+  color: #c8ffdc;
+  margin-top: 3px;
+}
+
+.asiste-cuerpo {
+  overflow-y: auto;
+  padding: 12px;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: #3a4166 transparent;
+}
+.asiste-cuerpo::-webkit-scrollbar { width: 10px; }
+.asiste-cuerpo::-webkit-scrollbar-track { background: #171a2c; }
+.asiste-cuerpo::-webkit-scrollbar-thumb { background: #3a4166; border: 2px solid var(--pix-borde); }
+
+.asiste-burbuja {
+  background: #171a2c;
+  border: 2px solid #3a4062;
+  padding: 9px 11px;
+  font-size: 1rem;
+  line-height: 1.3;
+  color: var(--pix-texto);
+  min-height: 32px;
+}
+.asiste-burbuja::first-letter { color: var(--pix-ambar); font-style: italic; }
+.asiste-cursor { animation: asiste-cursor 0.8s steps(2, start) infinite; color: var(--pix-ambar); }
+
+.asiste-pasos { margin-top: 12px; }
+.asiste-pasos h4 {
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.62rem;
+  color: var(--pix-ambar);
+  margin: 0 0 8px;
+}
+.asiste-paso {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 7px;
+  font-size: 0.98rem;
+  line-height: 1.25;
+  color: var(--pix-texto-2);
+}
+.asiste-paso .num {
+  flex: none;
+  width: 22px; height: 22px;
+  border: 2px solid var(--pix-borde);
+  background: #333a63;
+  color: #fff;
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.asiste-consejos { margin-top: 14px; }
+.asiste-consejos h4 {
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.62rem;
+  color: var(--pix-verde);
+  margin: 0 0 8px;
+}
+.asiste-chip {
+  display: inline-block;
+  margin: 0 6px 6px 0;
+  padding: 4px 7px;
+  border: 2px solid var(--pix-borde);
+  background: #23353f;
+  color: #bfe9ff;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.asiste-chip:hover { background: #2f4a5e; color: #fff; }
+.asiste-chip:active { transform: translateY(2px); box-shadow: none; }
+
+.asiste-pie {
+  border-top: 2px solid var(--pix-borde);
+  padding: 8px 12px;
+  background: #171a2c;
+  font-size: 0.95rem;
+  color: var(--pix-texto-3);
+  text-align: center;
+}
+.asiste-barra-vida {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 2px;
+  justify-content: center;
+}
+.asiste-barra-vida i { width: 10px; height: 6px; background: var(--pix-verde); display: block; }
+
+/* ----------------------------- Animaciones ------------------------------ */
+@keyframes asiste-flotar {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes asiste-parpadeo {
+  0% { background: var(--pix-ambar); }
+  50% { background: #7a531c; }
+}
+@keyframes asiste-cursor {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* Pie de página retro. */
+footer a { color: var(--pix-texto-3); }

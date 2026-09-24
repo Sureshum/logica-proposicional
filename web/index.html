@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel principal · Lógica Proposicional</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/estilos.css">
+</head>
+<body data-pagina="panel" class="min-h-screen flex flex-col">
+
+  <nav class="bg-slate-900 border-b-4 border-black shadow-lg relative z-10">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+      <a href="index.html" class="flex items-center gap-2 font-semibold">
+        <span class="inline-flex items-center justify-center w-9 h-9 border-2 border-black bg-indigo-500 text-2xl text-white shadow-[0_3px_0_#0b0c14]">∨</span>
+        <span class="pixel-titulo text-white hidden sm:inline">Lógica Proposicional</span>
+      </a>
+      <div class="flex items-center gap-1 text-sm">
+        <a href="directo.html" class="nav-enlace">Directo</a>
+        <a href="inverso.html" class="nav-enlace">Inverso</a>
+        <a href="ml.html" class="nav-enlace">Asistente IA</a>
+        <span class="mx-1 text-slate-500">|</span>
+        <span class="px-2 text-slate-300">versión navegador</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-8 relative z-10">
+
+    <section class="caja p-8 mb-8">
+      <h1 class="pixel-titulo text-slate-800">
+        Bienvenido(a), <span class="text-amber-400">amante de la lógica</span>
+      </h1>
+      <p class="text-slate-600 mt-4 max-w-3xl text-lg">
+        Sistema interactivo de <strong>Lógica Proposicional</strong> con tres módulos:
+        construir Fórmulas Bien Formadas paso a paso, analizar una FBF ingresada,
+        y un asistente de <em>Machine Learning</em> que clasifica proposiciones y
+        traduce lenguaje natural a símbolos.
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-6 mt-8">
+
+        <a href="directo.html" class="tarjeta-modulo bg-gradient-to-br from-indigo-500 to-violet-600">
+          <span class="icono-modulo">p → q</span>
+          <h2 class="text-lg font-bold text-white">Módulo Directo</h2>
+          <p class="text-sm text-indigo-100">
+            Define proposiciones simples (p: "Llueve") y aplica conectivos
+            (¬, ∧, ∨, →, ↔) para construir la FBF resultante y su lectura.
+          </p>
+          <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-white">
+            Abrir módulo <span>→</span>
+          </span>
+        </a>
+
+        <a href="inverso.html" class="tarjeta-modulo bg-gradient-to-br from-emerald-500 to-teal-600">
+          <span class="icono-modulo">(p ∧ q)</span>
+          <h2 class="text-lg font-bold text-white">Módulo Inverso</h2>
+          <p class="text-sm text-emerald-100">
+            Ingresa una FBF válida (ej. <span class="texto-fbf">(p ∧ q) → ¬r</span>),
+            obtén sus átomos, interpretación, tabla de verdad y árbol sintáctico.
+          </p>
+          <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-white">
+            Abrir módulo <span>→</span>
+          </span>
+        </a>
+
+        <a href="ml.html" class="tarjeta-modulo bg-gradient-to-br from-orange-500 to-rose-600">
+          <span class="icono-modulo">e₁…eₙ → mL</span>
+          <h2 class="text-lg font-bold text-white">Asistente IA</h2>
+          <p class="text-sm text-orange-100">
+            Clasifica una proposición como Tautología / Contradicción / Contingencia
+            y traduce oraciones en español a su forma simbólica (NLP).
+          </p>
+          <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-white">
+            Abrir módulo <span>→</span>
+          </span>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="caja p-6">
+      <h2 class="pixel-titulo text-slate-700 mb-4">Símbolos utilizados por el sistema</h2>
+      <div class="grid sm:grid-cols-5 gap-3 text-sm">
+        <div class="p-3 bg-slate-50 border-2 border-black text-center">
+          <div class="texto-fbf text-lg">¬ / ~</div>
+          <div class="text-slate-500">Negación</div>
+        </div>
+        <div class="p-3 bg-slate-50 border-2 border-black text-center">
+          <div class="texto-fbf text-lg">∧ / &amp;</div>
+          <div class="text-slate-500">Conjunción</div>
+        </div>
+        <div class="p-3 bg-slate-50 border-2 border-black text-center">
+          <div class="texto-fbf text-lg">∨ / |</div>
+          <div class="text-slate-500">Disyunción</div>
+        </div>
+        <div class="p-3 bg-slate-50 border-2 border-black text-center">
+          <div class="texto-fbf text-lg">→ / =&gt;</div>
+          <div class="text-slate-500">Condicional</div>
+        </div>
+        <div class="p-3 bg-slate-50 border-2 border-black text-center">
+          <div class="texto-fbf text-lg">↔ / &lt;=&gt;</div>
+          <div class="text-slate-500">Bicondicional</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="text-center text-xs text-slate-400 py-4 relative z-10">
+    Fórmulas Bien Formadas · Tablas de verdad · Machine Learning
+  </footer>
+
+  <script src="assets/js/parser.js"></script>
+  <script src="assets/js/semantica.js"></script>
+  <script src="assets/js/generador.js"></script>
+  <script src="assets/js/nlp.js"></script>
+  <script src="assets/js/ml.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/asistente.js"></script>
+</body>
+</html>

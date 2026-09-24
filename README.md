@@ -7,6 +7,12 @@ natural language into logical symbols.
 
 > Default account: `admin` / `1234`
 
+There are **two running versions** of the same system:
+
+1. **Flask web app** (this repo's root): Python backend + HTML/JS frontend.
+2. **100% browser version** (the `web/` folder): all the logic ported to
+   JavaScript, deployed to **GitHub Pages** (no server, no login).
+
 ---
 
 ## 1. What the system does
@@ -263,7 +269,76 @@ All `/api/*` routes require a session (`@login_requerido`).
 
 ---
 
-## 8. How to run it
+## 8. Browser-only version (`web/`) + GitHub Pages
+
+The same system also exists as a **100% static** version. Every logic module was
+ported to JavaScript, so it runs entirely in the browser and can be hosted
+anywhere that serves static files — e.g. **GitHub Pages**.
+
+> Deployed site: **<https://Sureshum.github.io/logica-proposicional/>**
+
+### Structure
+
+```
+web/                          # static site root (what GitHub Pages serves)
+├── index.html                # panel (same as /panel)
+├── directo.html              # Direct module
+├── inverso.html              # Inverse module
+├── ml.html                   # AI Assistant
+└── assets/
+    ├── css/estilos.css       # pixel-art theme (same as the Flask version)
+    └── js/
+        ├── parser.js         # LogicaParser  (port of logica/parser.py)
+        ├── semantica.js      # Semantica     (port of logica/semantica.py)
+        ├── generador.js      # Generador     (port of logica/generador.py)
+        ├── nlp.js            # Nlp           (port of ml/nlp.py)
+        ├── ml.js             # ML            (features + balanced dataset + k-NN, port of ml/*)
+        ├── app.js            # shared esc()
+        └── asistente.js      # BOOLE assistant (same as Flask version)
+```
+
+Each JS module binds to the global scope (`window.LogicaParser`, `window.Semantica`,
+`window.Generador`, `window.Nlp`, `window.ML`), so the pages call the exact
+functions the Flask API used to call on the server:
+
+| Flask API | Browser equivalent |
+|-----------|--------------------|
+| `POST /api/directo/agregar` | `directo.html` validates locally (same rules) and builds `AtomNode`s |
+| `POST /api/generar` | `Generador.proposicionAleatoria(...)` |
+| `POST /api/directo/negar` · `combinar` | `LogicaParser.parsear` + `NegNode`/`BinNode` + `aCadena`/`renderEs` |
+| `POST /api/inverso` | `Semantica.clasificar` + `tablaVerdadCompleta` + `tablaHtml` + `arbolHtml` |
+| `GET /api/ml/estado` · `POST /api/ml/clasificar` | `ML.info()` · `ML.predecir(formula)` |
+| `POST /api/ml/nlp` | `Nlp.oracionAFbf(...)` + `LogicaParser.parsear` + `ML.predecir(...)` |
+| `POST /api/ml/reentrenar` | `ML.reentrenar(n)` |
+
+The browser classifier is the **own k-NN (k=5, z-score normalized)** ported to
+JavaScript. Training is **lazy**: the first call to `ML.info()` / `ML.predecir()`
+generates a balanced dataset (≈1000 formulas, deterministic seed 42) and trains
+in memory. Nothing is sent to any server.
+
+### Deploy to GitHub Pages
+
+The workflow `.github/workflows/pages.yml` runs on every push to `master`,
+uploads the `web/` folder and publishes it. The Pages **source** is
+**GitHub Actions** (`build_type=workflow`).
+
+One-time setup (already done for this repo):
+
+```bash
+gh api -X PUT /repos/Sureshum/logica-proposicional/pages -f build_type=workflow
+```
+
+Manual alternative: *Settings → Pages → Source: "GitHub Actions"*.
+
+To test the static version locally:
+
+```bash
+python -m http.server 8000 --directory web   # http://localhost:8000
+```
+
+---
+
+## 9. How to run it (Flask version)
 
 ```bash
 pip install -r requirements.txt        # only Flask is required
@@ -275,7 +350,7 @@ python app.py                          # server at http://localhost:5000
 
 ---
 
-## 9. Ideas for studying / extending
+## 10. Ideas for studying / extending
 
 1. **Add new connectives** (NAND `↑`, NOR `↓`): touch `SIMBOLOS`, `NOMBRE_OPERADORES`,
    the grammar in `parser.py` and `evaluar` in `semantica.py`.

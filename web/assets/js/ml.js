@@ -256,6 +256,61 @@
     return _modelo;
   }
 
+  ML.OPERADORES_SUGERIDOS = [
+    { op: "∧", nombre: "y", etiqueta: "conjunción" },
+    { op: "∨", nombre: "o", etiqueta: "disyunción" },
+    { op: "→", nombre: "si…entonces", etiqueta: "condicional" },
+    { op: "↔", nombre: "sii", etiqueta: "bicondicional" },
+  ];
+
+  ML.sugerirConectivo = function (formulaA, formulaB, opciones) {
+    opciones = opciones || {};
+    var maximo = opciones.maximo || ML.OPERADORES_SUGERIDOS.length;
+    var sugerencias = [];
+
+    ML.OPERADORES_SUGERIDOS.forEach(function (cand) {
+      var texto = "(" + formulaA + " " + cand.op + " " + formulaB + ")";
+      var ast;
+      try { ast = LP.parsear(texto); } catch (e) { return; }
+
+      var pred = ML.predecir(texto);
+      var distintos = {};
+      LP.atomos(ast).forEach(function (a) { distintos[a] = true; });
+      var nDistintos = Object.keys(distintos).length;
+      var nodos = LP.contarNodos(ast);
+      var prob = pred.probabilidades["Contingencia"] || 0;
+
+      var penal = 0;
+      var motivos = [];
+      if (nDistintos < 2) { penal -= 0.6; motivos.push("aprovecha solo una tarjeta"); }
+      if (nodos > 30) { penal -= 0.25; motivos.push("fórmula demasiado larga"); }
+      if (nodos < 3) { penal -= 0.2; motivos.push("resultado demasiado simple"); }
+
+      var puntuacion = Math.max(0, prob + penal);
+      var motivo = motivos.length
+        ? motivos.join("; ")
+        : (pred.clase === "Contingencia"
+            ? "contingencia clara: su valor depende de las dos tarjetas"
+            : "queda como " + pred.clase.toLowerCase());
+
+      sugerencias.push({
+        op: cand.op,
+        nombre: cand.nombre,
+        etiqueta: cand.etiqueta,
+        formula: texto,
+        clase: pred.clase,
+        probabilidad: Math.round(prob * 1000) / 1000,
+        puntuacion: Math.round(puntuacion * 1000) / 1000,
+        nodos: nodos,
+        atomos: nDistintos,
+        motivo: motivo,
+      });
+    });
+
+    sugerencias.sort(function (a, b) { return b.puntuacion - a.puntuacion; });
+    return sugerencias.slice(0, maximo);
+  };
+
   ML.entrenar = entrenar;
   ML.reentrenar = function (n) { return entrenar(n || ML.NO_DEFECTO); };
   ML.obtenerModelo = obtenerModelo;
@@ -264,6 +319,8 @@
     return { algoritmo: obtenerModelo().nombre, metricas: obtenerModelo().metricas };
   };
   ML.extraerCaracteristicas = extraerCaracteristicas;
+  ML.listo = function () { return _modelo !== null; };
+
 
   window.ML = ML;
 })();

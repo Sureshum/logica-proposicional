@@ -19,8 +19,8 @@ a símbolos lógicos.
 
 | Módulo | Qué hace | Página |
 |--------|----------|--------|
-| **Directo** | Construyes FBF paso a paso: defines proposiciones (p = "Llueve") y las combinas con conectivos (¬ ∧ ∨ → ↔). | `directo.html` |
-| **Inverso** | Escribes una FBF y el sistema la desarma: forma canónica, átomos, lectura en español, clasificación, tabla de verdad y árbol sintáctico. | `inverso.html` |
+| **Directo** | Construyes FBF paso a paso: defines proposiciones (p = "Llueve") y las combinas con conectivos (¬ ∧ ∨ → ↔). El generador y el NLP crean símbolos y significados coherentes, y el modelo de ML sugiere el siguiente conectivo. | `directo.html` |
+| **Inverso** | Escribes una FBF y el sistema la desarma: forma canónica, átomos, lectura en español, clasificación, tabla de verdad y árbol sintáctico. El generador produce fórmulas con significados de un mismo tema. | `inverso.html` |
 | **Asistente IA** | Predice si una FBF es Tautología / Contradicción / Contingencia y traduce oraciones ("Llueve y hace frío") a forma simbólica. | `ml.html` |
 
 Todo con estética **pixel art** (retro 8-bit) y el asistente virtual **BOOLE**.
@@ -43,9 +43,9 @@ web/                          # raíz del sitio (lo que publica GitHub Pages)
     └── js/
         ├── parser.js         # LogicaParser  (tokenizador + parser descendente)
         ├── semantica.js      # Semantica     (evaluación, tablas de verdad, clasificación)
-        ├── generador.js      # Generador     (FBF aleatorias para el dataset)
+        ├── generador.js      # Generador     (temas coherentes, FBF y dataset)
         ├── nlp.js            # Nlp           (español → FBF por reglas)
-        ├── ml.js             # ML            (características + dataset + k-NN)
+        ├── ml.js             # ML            (características + dataset + k-NN + sugerencias)
         ├── auth.js           # Auth          (cuentas y sesión en localStorage)
         ├── portal.js         # lógica de los formularios de acceso y registro
         ├── app.js            # utilidades (esc)
@@ -157,6 +157,30 @@ Límite de 5 átomos por tabla (2ⁿ filas).
 3. `modelo`: **k-NN (k=5)** con normalización z-score, propio y en JS.
 4. Entrenamiento **perezoso**: la primera llamada a `ML.info()` o
    `ML.predecir()` entrena en memoria; `ML.reentrenar(n)` rehace el dataset.
+5. `ML.sugerirConectivo(A, B)`: puntúa `A ∧ B`, `A ∨ B`, `A → B` y `A ↔ B`
+   con el k-NN y las ordena. La puntuación es la probabilidad de que el
+   resultado sea una **contingencia** útil, y penaliza los resultados que solo
+   usan una tarjeta, los demasiado simples y los demasiado largos. Se usa en
+   `directo.html` para sugerir el siguiente conectivo (~2 ms con el modelo ya
+   entrenado, ~130 ms la primera vez).
+
+### `generador.js` — generación coherente
+
+`Generador.proposicionCoherente({ simbolosUsados, textosUsados })` mantiene la
+coherencia entre el símbolo y su texto:
+
+- **Símbolos**: nunca repite uno ya usado y se asignan en orden `p, q, r, s, t, u…`;
+  si se agotan, sigue con `p1, p2…`.
+- **Significados**: nunca repite uno, ni dentro de la misma fórmula ni respecto a
+  las tarjetas que ya tienes en pantalla.
+- **Temas**: todos los significados de una generación salen del mismo tema
+  (clima, estudio, rutina diaria, ocio, clase o salud), así que la lectura en
+  lenguaje natural se lee de forma natural.
+- Evita `¬¬`, `p → p` y fórmulas de un solo átomo.
+
+`Generador.significadosDesdeFrase(frase, { simbolosUsados })` hace lo mismo a
+partir de texto: divide la frase por los conectivos, busca cada proposición en
+los temas y, si no la encuentra, se queda con tus propias palabras.
 
 ### `nlp.js` — español → FBF
 
@@ -165,6 +189,7 @@ Límite de 5 átomos por tabla (2ⁿ filas).
 "si p entonces q"  → p → q
 "p solo si q"      → p → q
 "y" → ∧   "o" → ∨   "no" → ¬
+"corro, bailo y canto" → p ∧ q ∧ r   (las comas cuentan como conjunción)
 ```
 
 ---

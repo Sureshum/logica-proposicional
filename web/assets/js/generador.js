@@ -7,14 +7,116 @@
   var G = {};
 
   G.ATOMOS_POOL = ["p", "q", "r", "s", "t"];
-  G.DESCRIPCIONES_POOL = [
-    "llueve", "hace frío", "hace calor", "nieva", "hay neblina",
-    "estudio", "duermo", "como", "trabajo", "descanso",
-    "corro", "bailo", "canto", "leo", "mira televisión", "viaja",
+
+  G.ORDEN_SIMBOLOS = ["p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+
+  G.TEMAS = [
+    {
+      id: "clima",
+      etiqueta: "el clima",
+      textos: ["llueve", "nieva", "hace frío", "hace calor", "hay viento",
+               "está nublado", "hay neblina", "truena"],
+    },
+    {
+      id: "estudio",
+      etiqueta: "el estudio",
+      textos: ["estudio", "hago la tarea", "apruebo el examen", "tengo dudas",
+               "repaso", "voy a la biblioteca", "entrego el trabajo", "uso el móvil"],
+    },
+    {
+      id: "rutina",
+      etiqueta: "la rutina diaria",
+      textos: ["duermo", "despierto temprano", "como bien", "hago ejercicio",
+               "descanso", "salgo a tiempo", "tomo café", "me acuesto tarde"],
+    },
+    {
+      id: "ocio",
+      etiqueta: "el ocio",
+      textos: ["corro", "bailo", "canto", "leo", "miro televisión",
+               "viajo", "juego al fútbol", "cocino"],
+    },
+    {
+      id: "clase",
+      etiqueta: "la clase",
+      textos: ["estoy atento", "participo en clase", "tengo prisa",
+               "el profesor explica", "hago preguntas", "me aburro",
+               "llego tarde", "tomo apuntes"],
+    },
+    {
+      id: "salud",
+      etiqueta: "la salud",
+      textos: ["tengo sueño", "tengo buena salud", "bebo agua", "estoy relajado",
+               "tengo fiebre", "sigo la dieta", "me cuido la espalda", "respiro bien"],
+    },
   ];
+
+  G.DESCRIPCIONES_POOL = G.TEMAS.reduce(function (acc, t) {
+    return acc.concat(t.textos);
+  }, []);
 
   var OPERADORES_BINARIOS = ["∧", "∨", "→", "↔"];
 
+  G.CONECTORES_FRASE = ["y", "o", "u", "e", "ni", "no", "si", "entonces", "solo", "sii"];
+
+  G.normalizarTexto = function (texto) {
+    return String(texto == null ? "" : texto)
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9ñ ]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  G.simboloLibre = function (simbolosUsados) {
+    var visto = {};
+    (simbolosUsados || []).forEach(function (s) { visto[String(s).trim().toLowerCase()] = true; });
+    for (var i = 0; i < G.ORDEN_SIMBOLOS.length; i++) {
+      if (!visto[G.ORDEN_SIMBOLOS[i]]) return G.ORDEN_SIMBOLOS[i];
+    }
+    for (var n = 1; n < 2000; n++) {
+      if (!visto["p" + n]) return "p" + n;
+    }
+    return "p" + Date.now();
+  };
+
+  G.temasConTextosLibres = function (textosUsados) {
+    var usados = {};
+    (textosUsados || []).forEach(function (t) { usados[G.normalizarTexto(t)] = true; });
+    return G.TEMAS.map(function (tema) {
+      return {
+        id: tema.id,
+        etiqueta: tema.etiqueta,
+        libres: tema.textos.filter(function (t) { return !usados[G.normalizarTexto(t)]; }),
+        total: tema.textos.length,
+      };
+    });
+  };
+
+  G.elegirTema = function (textosUsados, temaForzado, rnd) {
+    rnd = rnd || Math.random;
+    var candidatos = G.temasConTextosLibres(textosUsados);
+    var conLibres = candidatos.filter(function (c) { return c.libres.length > 0; });
+    if (!conLibres.length) {
+      var todos = G.TEMAS[Math.floor(rnd() * G.TEMAS.length)];
+      return { id: todos.id, etiqueta: todos.etiqueta, textos: todos.textos.slice(), recycles: true };
+    }
+    var elegido = null;
+    if (temaForzado) {
+      elegido = conLibres.filter(function (c) { return c.id === temaForzado; })[0] || null;
+    }
+    if (!elegido) elegido = conLibres[Math.floor(rnd() * conLibres.length)];
+    return { id: elegido.id, etiqueta: elegido.etiqueta, textos: elegido.libres.slice(), recycles: false };
+  };
+
+  function barajar(lista, rnd) {
+    var out = lista.slice();
+    for (var i = out.length - 1; i > 0; i--) {
+      var r = Math.floor(rnd() * (i + 1));
+      var tmp = out[i]; out[i] = out[r]; out[r] = tmp;
+    }
+    return out;
+  }
 
   G.alea = function (semilla) {
     var a = semilla >>> 0;
@@ -65,44 +167,182 @@
   }
 
 
-  G.proposicionAleatoria = function (simbolosPermitidos, rnd) {
-    rnd = rnd || Math.random;
-    var pool = simbolosPermitidos && simbolosPermitidos.length ? simbolosPermitidos.slice() : G.ATOMOS_POOL.slice();
-    var n = Math.min(1 + Math.floor(rnd() * 3), pool.length);
-    var varsUsadas = [];
-    for (var i = 0; i < n; i++) {
-      var idx = Math.floor(rnd() * pool.length);
-      varsUsadas.push(pool.splice(idx, 1)[0]);
+  function sinDobleNegacion(nodo) {
+    while (nodo instanceof LP.NegNode && nodo.hijo instanceof LP.NegNode) nodo = nodo.hijo;
+    if (nodo instanceof LP.NegNode) return new LP.NegNode(sinDobleNegacion(nodo.hijo));
+    if (nodo instanceof LP.BinNode) {
+      return new LP.BinNode(nodo.op, sinDobleNegacion(nodo.izq), sinDobleNegacion(nodo.der));
     }
+    return nodo;
+  }
+
+  function inspeccionar(nodo) {
+    if (nodo instanceof LP.NegNode) {
+      if (nodo.hijo instanceof LP.NegNode) return { valido: false };
+      var dentro = inspeccionar(nodo.hijo);
+      return dentro.valido ? dentro : { valido: false };
+    }
+    if (nodo instanceof LP.BinNode) {
+      var izq = inspeccionar(nodo.izq);
+      var der = inspeccionar(nodo.der);
+      if (!izq.valido || !der.valido) return { valido: false };
+      if (LP.aCadena(nodo.izq) === LP.aCadena(nodo.der)) return { valido: false };
+      return { valido: true };
+    }
+    return { valido: true };
+  }
+
+  function construirInteresante(varsUsadas, rnd, opciones) {
+    var profundidad = opciones.profundidad || (rnd() < 0.4 ? 3 : 2);
+    var ast = fbfAleatoria(varsUsadas, profundidad, rnd);
+    for (var intento = 0; intento < 60; intento++) {
+      var distintos = {};
+      LP.atomos(ast).forEach(function (a) { distintos[a] = true; });
+      var comodo = Object.keys(distintos).length >= 2 &&
+                   LP.profundidad(ast) >= 2 && inspeccionar(ast).valido;
+      if (comodo) break;
+      ast = fbfAleatoria(varsUsadas, profundidad, rnd);
+    }
+    if (opciones.negacion !== false && rnd() < 0.25) ast = new LP.NegNode(ast);
+    return sinDobleNegacion(ast);
+  }
+
+
+  G.proposicionCoherente = function (opciones) {
+    opciones = opciones || {};
+    var rnd = opciones.rnd || Math.random;
+    var usados = (opciones.simbolosUsados || []).slice();
+    var tema = G.elegirTema(opciones.textosUsados, opciones.tema, rnd);
+
+    var candidatos = barajar(tema.textos, rnd);
+    var cuantos = Math.min(candidatos.length, opciones.cuantosTextos || (rnd() < 0.55 ? 2 : 3));
+
     var descripciones = {};
-    varsUsadas.forEach(function (v) {
-      descripciones[v] = G.DESCRIPCIONES_POOL[Math.floor(rnd() * G.DESCRIPCIONES_POOL.length)];
+    for (var i = 0; i < cuantos; i++) {
+      var simbolo = G.simboloLibre(usados);
+      usados.push(simbolo);
+      descripciones[simbolo] = candidatos[i];
+    }
+
+    var varsUsadas = Object.keys(descripciones);
+    var ast = construirInteresante(varsUsadas, rnd, opciones);
+
+    var presentes = {};
+    LP.atomos(ast).forEach(function (a) { presentes[a] = true; });
+    var final = {};
+    var simbolosFinales = [];
+    varsUsadas.forEach(function (s) {
+      if (!presentes[s]) return;
+      final[s] = descripciones[s];
+      simbolosFinales.push(s);
     });
-
-    var ast;
-    if (n === 1 && rnd() < 0.5) {
-      ast = new LP.AtomNode(varsUsadas[0]);
-      if (rnd() < 0.3) ast = new LP.NegNode(ast);
-    } else {
-      ast = fbfAleatoria(varsUsadas, 1 + Math.floor(rnd() * 2), rnd);
-    }
-    if (rnd() < 0.25) ast = new LP.NegNode(ast);
-
-    var libres = [];
-    var usadas = {};
-    varsUsadas.forEach(function (v) { usadas[v] = true; });
-    libres = G.ATOMOS_POOL.filter(function (s) { return !usadas[s]; });
-    if (libres.length && rnd() < 0.25) {
-      var extra = libres[Math.floor(rnd() * libres.length)];
-      descripciones[extra] = G.DESCRIPCIONES_POOL[Math.floor(rnd() * G.DESCRIPCIONES_POOL.length)];
-      ast = new LP.BinNode(OPERADORES_BINARIOS[Math.floor(rnd() * OPERADORES_BINARIOS.length)], ast, new LP.AtomNode(extra));
-    }
 
     return {
       formula: LP.aCadena(ast),
-      descripciones: descripciones,
-      lectura: LP.renderEs(ast, descripciones),
+      descripciones: final,
+      lectura: LP.renderEs(ast, final),
+      tema: tema.id,
+      etiquetaTema: tema.etiqueta,
+      atomos: simbolosFinales,
+      recicla: !!tema.recycles,
     };
+  };
+
+
+  G.buscarTemaDeTexto = function (texto) {
+    var clave = G.normalizarTexto(texto);
+    for (var i = 0; i < G.TEMAS.length; i++) {
+      for (var j = 0; j < G.TEMAS[i].textos.length; j++) {
+        if (G.normalizarTexto(G.TEMAS[i].textos[j]) === clave) return G.TEMAS[i];
+      }
+    }
+    return null;
+  };
+
+
+  G.CONECTORES_FRASE = ["y", "o", "u", "e", "ni", "no", "si", "entonces", "solo", "sii"];
+
+  G.significadosDesdeFrase = function (frase, opciones) {
+    opciones = opciones || {};
+    var usados = (opciones.simbolosUsados || []).slice();
+
+    var bruto = String(frase == null ? "" : frase)
+      .replace(/[,;:]+/g, " y ")
+      .replace(/[^\p{L}\p{N}\s]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    var originales = bruto ? bruto.split(" ") : [];
+    var palabras = originales.map(G.normalizarTexto);
+
+    var indice = {};
+    G.TEMAS.forEach(function (tema) {
+      tema.textos.forEach(function (texto) { indice[G.normalizarTexto(texto)] = texto; });
+    });
+    var conectores = {};
+    G.CONECTORES_FRASE.forEach(function (c) { conectores[c] = true; });
+    var determinantes = {};
+    ["el", "la", "los", "las", "un", "una", "unos", "unas", "mis", "tus",
+     "su", "sus", "de", "del", "al"].forEach(function (d) { determinantes[d] = true; });
+
+    var grupos = [];
+    var actual = [];
+    for (var i = 0; i < palabras.length; i++) {
+      if (conectores[palabras[i]]) {
+        if (actual.length) grupos.push(actual);
+        actual = [];
+      } else {
+        actual.push(i);
+      }
+    }
+    if (actual.length) grupos.push(actual);
+
+    var descripciones = {};
+    var temasUsados = [];
+    var propios = [];
+
+    grupos.forEach(function (indices) {
+      var gramaCompleta = indices.map(function (k) { return palabras[k]; }).join(" ");
+      var mejor = indice[gramaCompleta]
+        ? { texto: indice[gramaCompleta], propio: false }
+        : null;
+      if (!mejor) {
+          var ini = 0;
+        while (ini < indices.length - 1 && determinantes[palabras[indices[ini]]]) ini++;
+        mejor = {
+          texto: indices.slice(ini).map(function (k) { return originales[k]; }).join(" "),
+          propio: true,
+        };
+      }
+      if (!mejor.texto) return;
+
+      var simbolo = G.simboloLibre(usados);
+      usados.push(simbolo);
+      descripciones[simbolo] = mejor.texto;
+      if (mejor.propio) {
+        propios.push(simbolo);
+      } else {
+        var tema = G.buscarTemaDeTexto(mejor.texto);
+        if (tema && temasUsados.indexOf(tema.id) === -1) temasUsados.push(tema.id);
+      }
+    });
+
+    var etiquetas = temasUsados.map(function (id) {
+      var t = G.TEMAS.filter(function (x) { return x.id === id; })[0];
+      return t ? t.etiqueta : id;
+    });
+
+    return {
+      descripciones: descripciones,
+      simbolos: Object.keys(descripciones),
+      temas: temasUsados,
+      etiquetasTema: etiquetas,
+      propios: propios,
+    };
+  };
+
+
+  G.proposicionAleatoria = function (simbolosPermitidos, rnd) {
+    return G.proposicionCoherente({ simbolosUsados: [], rnd: rnd });
   };
 
 

@@ -61,7 +61,8 @@
              class="texto-fbf w-full px-4 py-3 border border-slate-300 focus:ring-2 focus:ring-emerald-400 outline-none"
              placeholder="(p ∧ q) → ¬r" autocomplete="off">
       <button onclick="cargarEjemplo()" class="text-xs text-emerald-600 hover:underline mt-1 mb-3">cargar ejemplo</button>
-      <button onclick="generarFormula()" class="text-xs text-fuchsia-600 hover:underline mt-1 mb-3 ml-3">⚡ generar FBF aleatoria</button>
+      <button onclick="generarFormula()" class="text-xs text-fuchsia-600 hover:underline mt-1 mb-3 ml-3"
+              title="Genera una FBF con significados coherentes del mismo tema">⚡ generar FBF aleatoria</button>
 
       <div class="flex flex-wrap items-center gap-1.5 mb-3">
         <span class="text-[11px] text-slate-400 mr-1">Ejemplos:</span>
@@ -77,6 +78,8 @@
       <input id="asignaciones-input" type="text"
              class="px-4 py-2.5 border border-slate-300 focus:ring-2 focus:ring-emerald-400 outline-none w-full"
              placeholder='p: Llueve, q: Hace frío, r: Nieva'>
+
+      <p id="nota-generada" class="hidden text-[11px] text-indigo-500 mt-2"></p>
 
       <button id="btn-analizar" onclick="analizar()" class="btn-pixel btn-verde mt-4">
         Analizar FBF
@@ -148,6 +151,7 @@
     function cargarEjemploInv(formula) {
       document.getElementById('formula-input').value = formula;
       document.getElementById('asignaciones-input').value = 'p: Llueve, q: Hace frío, r: Nieva';
+      document.getElementById('nota-generada').classList.add('hidden');
       analizar();
     }
 
@@ -206,14 +210,20 @@
     function cargarEjemplo() {
       document.getElementById('formula-input').value = '(p ∧ q) → ¬r';
       document.getElementById('asignaciones-input').value = 'p: Llueve, q: Hace frío, r: Nieva';
+      document.getElementById('nota-generada').classList.add('hidden');
     }
 
     function generarFormula() {
-      const res = Generador.proposicionAleatoria();
+      const res = Generador.proposicionCoherente();
       const asig = Object.keys(res.descripciones || {})
         .map(k => `${k}: ${res.descripciones[k]}`).join(', ');
       document.getElementById('formula-input').value = res.formula;
       document.getElementById('asignaciones-input').value = asig;
+      const nota = document.getElementById('nota-generada');
+      nota.classList.remove('hidden');
+      nota.textContent = `Generada con el tema «${res.etiquetaTema}»: los significados ` +
+        `son del mismo contexto y no se repiten, así que la lectura en lenguaje ` +
+        `natural es coherente.`;
       analizar();
     }
 </script>

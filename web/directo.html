@@ -61,9 +61,29 @@
       </div>
       <p class="text-xs text-slate-400 mt-3">
         <strong>⚡ Generar</strong> crea una proposición aleatoria (simple o molecular)
-        con significado automático y la añade como tarjeta.
+        con significado automático y la añade como tarjeta. Los símbolos y los
+        significados nunca se repiten: siempre salen del mismo tema y en orden
+        (<span class="texto-fbf">p, q, r…</span>).
       </p>
       <p id="estado-atomo" class="text-sm text-amber-700 mt-2 hidden"></p>
+
+      <div class="mt-4 pt-4 border-t border-dashed border-slate-300">
+        <label class="block text-slate-700 text-sm mb-1" for="frase-nlp">
+          O escribe una frase y la traduzco a FBF con el NLP
+        </label>
+        <div class="grid sm:grid-cols-[1fr_auto] gap-2">
+          <input id="frase-nlp" type="text" maxlength="180" autocomplete="off"
+                 placeholder="si llueve y nieva entonces no hace calor"
+                 class="px-3 py-2 border border-slate-300 focus:ring-2 focus:ring-indigo-400 outline-none">
+          <button type="button" onclick="traducirFrase()" class="btn-pixel btn-verde">Traducir</button>
+        </div>
+        <p class="text-xs text-slate-400 mt-2">
+          Detecta los signos (<strong>y</strong>, <strong>o</strong>, <strong>no</strong>,
+          <strong>si…entonces</strong>, <strong>si y solo si</strong>), agrupa las
+          proposiciones del mismo tema y les asigna símbolos libres. Pulsa
+          <kbd>Enter</kbd> para traducir.
+        </p>
+      </div>
     </section>
 
     <section class="caja p-6 mb-6">
@@ -105,6 +125,20 @@
         los botones de cada tarjeta. <strong>¬</strong> se aplica sobre A (o la última
         tarjeta si no hay selección). Los conectivos binarios combinan A y B.
       </p>
+
+      <div id="panel-sugerencia" class="hidden mt-2 border-2 border-dashed border-emerald-300 bg-emerald-50 p-3">
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <span class="pixel-etiqueta text-emerald-700">ML sugiere</span>
+          <span id="sugerencia-nota" class="text-[11px] text-emerald-700"></span>
+        </div>
+        <div id="sugerencia-lista" class="flex flex-wrap items-center gap-2"></div>
+        <p class="text-[11px] text-emerald-600 mt-2">
+          El k-NN (5 vecinos) puntúa cada conectivo según lo que aprendió: la
+          puntuación es la probabilidad de que el resultado sea una contingencia
+          útil, y penaliza resultados que solo usan una tarjeta o que son
+          tautologías triviales. Pulsa el que prefieras y se aplica igual que el botón.
+        </p>
+      </div>
     </section>
 
     <section class="caja p-6 mb-6">
@@ -145,12 +179,20 @@
       return {
         mostrar: function (msg, color) {
           const el = document.getElementById('estado-atomo');
-          el.classList.remove('hidden');
+          const colores = { red: 'text-red-600', green: 'text-emerald-600', amber: 'text-amber-700' };
+          el.className = 'text-sm mt-2 ' + (colores[color] || 'text-amber-700');
           el.textContent = msg;
         },
         simbolosEnUso: function () {
           const s = new Set();
           tarjetas.forEach(t => Object.keys(t.descripciones || {}).forEach(k => s.add(k)));
+          return Array.from(s);
+        },
+        textosEnUso: function () {
+          const s = new Set();
+          tarjetas.forEach(t => Object.values(t.descripciones || {}).forEach(v => {
+            if (v) s.add(Generador.normalizarTexto(v));
+          }));
           return Array.from(s);
         },
         unirDescripciones: function (lista) {
@@ -223,20 +265,97 @@
 
     function generarAleatoria() {
       const h = herramientas();
-      const res = Generador.proposicionAleatoria(h.simbolosEnUso());
-
-      const descripciones = {};
-      Object.keys(res.descripciones || {}).forEach(k => {
-        if (res.descripciones[k]) { descripciones[k] = res.descripciones[k]; }
+      const res = Generador.proposicionCoherente({
+        simbolosUsados: h.simbolosEnUso(),
+        textosUsados: h.textosEnUso()
       });
 
       tarjetas.unshift({
         id: ++idTarjeta,
         formula: res.formula,
         lectura: res.lectura,
-        descripciones: descripciones
+        descripciones: res.descripciones,
+        tema: res.etiquetaTema
       });
-      h.mostrar(`Proposición generada: ${res.formula}`, 'green');
+      const aviso = res.recicla ? ' · ya no quedan significados libres, se reutilizan' : '';
+      h.mostrar(`Proposición generada [${res.etiquetaTema}]: ${res.formula} → “${res.lectura}”${aviso}`, 'green');
+      renderTodo();
+    }
+
+    let cacheSugerencia = null;
+
+    function renderSugerencia() {
+      const panel = document.getElementById('panel-sugerencia');
+      const a = obtenerTarjeta(selA);
+      const b = obtenerTarjeta(selB);
+      if (!a || !b || a.id === b.id) {
+        panel.classList.add('hidden');
+        cacheSugerencia = null;
+        return;
+      }
+
+      const clave = a.formula + ' | ' + b.formula;
+      if (!cacheSugerencia || cacheSugerencia.clave !== clave) {
+        cacheSugerencia = { clave: clave, items: ML.sugerirConectivo(a.formula, b.formula) };
+      }
+      const items = cacheSugerencia.items;
+      if (!items.length) { panel.classList.add('hidden'); return; }
+
+      panel.classList.remove('hidden');
+      document.getElementById('sugerencia-lista').innerHTML = items.map((s, i) => `
+        <button type="button" onclick="combinar('${s.op}')" class="btn-insertar"
+                title="${esc(`${s.etiqueta}: ${s.motivo} · ${s.clase}`)}">
+          <span class="texto-fbf">${s.op}</span>
+          ${i === 0 ? '<span class="ml-1 text-[10px] text-emerald-700 uppercase">mejor</span>' : ''}
+        </button>`).join('');
+
+      const mejor = items[0];
+      document.getElementById('sugerencia-nota').textContent =
+        `con A y B · el modelo da ${mejor.probabilidad * 100}% de contingencia a ` +
+        `${mejor.formula} (${mejor.motivo})`;
+    }
+
+    function agregarTraduccion(fbf, desc, tema) {
+      const ast = LogicaParser.parsear(fbf);
+      const presentes = {};
+      LogicaParser.atomos(ast).forEach(a => { presentes[a] = true; });
+      const limpios = {};
+      Object.keys(desc).forEach(k => { if (presentes[k]) limpios[k] = desc[k]; });
+
+      tarjetas.unshift({
+        id: ++idTarjeta,
+        formula: fbf,
+        lectura: LogicaParser.renderEs(ast, limpios),
+        descripciones: limpios,
+        tema: tema || null
+      });
+    }
+
+    function traducirFrase() {
+      const h = herramientas();
+      const campo = document.getElementById('frase-nlp');
+      const frase = campo.value.trim();
+      if (!frase) { h.mostrar('Escribe una frase para traducir.', 'amber'); return; }
+
+      const res = Generador.significadosDesdeFrase(frase, { simbolosUsados: h.simbolosEnUso() });
+      if (!Object.keys(res.descripciones).length) {
+        h.mostrar('No encontré proposiciones en la frase.', 'red');
+        return;
+      }
+
+      let fbf;
+      try { fbf = Nlp.oracionAFbf(frase, res.descripciones); }
+      catch (e) { h.mostrar('No pude traducir la frase: ' + e.message, 'red'); return; }
+
+      const tema = res.etiquetasTema.length ? res.etiquetasTema.join(' + ') : 'tus propias palabras';
+      try { agregarTraduccion(fbf, res.descripciones, tema); }
+      catch (e) { h.mostrar('No pude añadir la tarjeta: ' + e.message, 'red'); return; }
+
+      campo.value = '';
+      const propios = res.propios.length
+        ? ` · ${res.propios.length} significado(s) los escribiste tú`
+        : '';
+      h.mostrar(`Traducido [${tema}]: ${fbf} → “${LogicaParser.renderEs(LogicaParser.parsear(fbf), res.descripciones)}”${propios}`, 'green');
       renderTodo();
     }
 
@@ -291,6 +410,7 @@
       renderChips();
       renderResultado();
       renderLista();
+      renderSugerencia();
     }
 
     function renderChips() {
@@ -332,6 +452,7 @@
           <div class="min-w-0">
             <div class="texto-fbf truncate">${esc(t.formula)}</div>
             <div class="text-xs text-slate-500 truncate">${esc(t.lectura)}</div>
+            ${t.tema ? `<div class="text-[10px] text-indigo-400 mt-0.5 truncate">tema: ${esc(t.tema)}</div>` : ''}
           </div>
           <button onclick="borrar(${t.id})" class="ml-auto p-1 text-slate-400 hover:text-red-500 hover:bg-red-50" title="Eliminar">✕</button>
         </div>`).join('');
@@ -343,8 +464,12 @@
       el.className = 'text-sm ml-2 flex-1 ' + (colores[color] || 'text-slate-500');
       el.textContent = msg;
     }
+    document.getElementById('frase-nlp').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); traducirFrase(); }
+    });
 
     renderTodo();
+
 </script>
 </body>
 </html>

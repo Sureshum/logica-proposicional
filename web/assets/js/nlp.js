@@ -53,8 +53,18 @@
     var out = "";
     for (var i = 0; i < oracion.length; i++) {
       if (permitidos.indexOf(oracion[i]) !== -1) out += oracion[i];
+      else out += " ";
     }
-    return out;
+    return out.replace(/\s+/g, " ");
+  }
+
+  var ENLACE_RE = new RegExp(
+    "\\b(el|la|los|las|un|una|unos|unas|de|del|al|en|con|para|por|cuando|porque|aunque|pero|se|su|sus|le|lo|mi|tu|me|te|ya|muy|todo|toda|todos|todas)\\b",
+    "g"
+  );
+
+  function quitarPalabrasDeEnlace(oracion) {
+    return oracion.replace(ENLACE_RE, " ").replace(/\s+/g, " ").trim();
   }
 
   function buscarFueraParens(oracion, token) {
@@ -121,17 +131,27 @@
     if (esAtomoValido(oracion)) return oracion;
 
     var sobrantes = oracion.split(/\s+/).filter(function (t) { return !esAtomoValido(t); });
+    if (!sobrantes.length) {
+      throw new LP.FBFError(
+        "La oración mezcla varios términos pegados (revisa comas y paréntesis): " + oracion
+      );
+    }
     throw new LP.FBFError(
       "Término(s) no reconocidos en la oración: " + sobrantes.join(", ") +
       ". Decláralos en las asignaciones (ej. p: Llueve)."
     );
   }
 
-  function oracionAFbf(oracion, simbolos) {
+  function oracionAFbf(oracion, simbolos, opciones) {
+    opciones = opciones || {};
     var texto = sinAcentos(oracion || "");
+    texto = texto.replace(/[,;:]+/g, " y ");
     texto = sustituirDescripciones(texto, simbolos);
+    if (opciones.limpiar !== false) texto = quitarPalabrasDeEnlace(texto);
 
-    texto = texto.replace(/\bsi y solo si\b/g, " ↔ ");
+    texto = texto.replace(/^si\s+(.+?)\s+y\s+solo\s+si\s+(.+)$/g, " ↔ ");
+    texto = texto.replace(/^sii\s+(.+?)\s+sii\s+(.+)$/g, " ↔ ");
+    texto = texto.replace(/\bsi\s+y\s+solo\s+si\b/g, " ↔ ");
     texto = texto.replace(/^(.+?)\s+solo\s+si\s+(.+)$/g, "($1 → $2)");
     texto = texto.replace(/\by\b/g, " ∧ ");
     texto = texto.replace(/\bo\b/g, " ∨ ");
@@ -147,6 +167,7 @@
   N.sinAcentos = sinAcentos;
   N.parsearAsignaciones = parsearAsignaciones;
   N.oracionAFbf = oracionAFbf;
+  N.quitarPalabrasDeEnlace = quitarPalabrasDeEnlace;
 
   window.Nlp = N;
 })();

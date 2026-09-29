@@ -211,6 +211,13 @@ input::placeholder { color: #6d7390; }
   text-shadow: none;
 }
 
+[data-slot="usuario"] {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 
 .texto-fbf {
   font-family: "VT323", "Cambria", serif;
@@ -480,16 +487,26 @@ p.aviso {
   inset: 26px 16px 20px 16px;
   background: var(--pix-borde);
   box-shadow: inset 0 0 0 6px #173a26;
+  transition: background 0.15s steps(2);
 }
 .asiste-ojo {
   position: absolute;
   top: 14px;
   width: 14px; height: 20px;
   background: #fff;
-  box-shadow: inset 0 0 0 4px var(--pix-borde);
+  box-shadow: inset 0 0 0 3px var(--pix-borde);
+  animation: asiste-parpadeo-ojos 5.4s steps(1, end) infinite;
+  transition: height 0.12s steps(2, end), top 0.12s steps(2, end), transform 0.12s steps(2, end);
 }
 .asiste-ojo.izq { left: 10px; }
 .asiste-ojo.der { right: 10px; }
+.asiste-ojo i {
+  position: absolute;
+  left: 4px; top: 6px;
+  width: 6px; height: 8px;
+  background: #0b0c14;
+  transition: transform 0.15s steps(2, end);
+}
 .asiste-boca {
   position: absolute;
   bottom: 8px; left: 50%;
@@ -498,11 +515,103 @@ p.aviso {
   background: #2d0f13;
   border: 2px solid var(--pix-borde);
   box-shadow: inset 0 -3px 0 0 #0b0c14;
+  transition: width 0.12s steps(2, end), height 0.12s steps(2, end), bottom 0.12s steps(2, end);
+}
+.asiste-pens {
+  position: absolute;
+  top: -20px; right: -6px;
+  display: none;
+  gap: 3px;
+}
+.asiste-pens i {
+  width: 5px; height: 5px;
+  background: #bfe9ff;
+  box-shadow: 0 0 0 2px #0b0c14;
+  animation: asiste-pens-subir 1.5s steps(1, end) infinite;
+}
+.asiste-pens i:nth-child(2) { animation-delay: 0.2s; }
+.asiste-pens i:nth-child(3) { animation-delay: 0.4s; }
+.asiste-cara::after {
+  content: "";
+  position: absolute;
+  top: 6px; right: 4px;
+  width: 4px; height: 6px;
+  background: #8ad4ff;
+  box-shadow: 0 0 0 2px #0b0c14;
+  opacity: 0;
+}
+.asiste-btn.expr-preocupado .asiste-cara::after {
+  opacity: 1;
+  animation: asiste-gota 1.2s steps(2, end) infinite;
+}
+.asiste-btn.expr-feliz .asiste-cara { background: var(--pix-ambar); box-shadow: inset 0 0 0 6px #6b4310; }
+.asiste-btn.expr-piensa .asiste-cara { background: #35507a; box-shadow: inset 0 0 0 6px #1d2b45; }
+.asiste-btn.expr-sorprendido .asiste-cara { background: var(--pix-indigo); box-shadow: inset 0 0 0 6px #2b2a63; }
+
+.asiste-btn.abierto .asiste-cara { background: var(--pix-rojo); box-shadow: inset 0 0 0 6px #43141c; }
+.asiste-btn.expr-feliz.abierto .asiste-cara { background: var(--pix-rojo); box-shadow: inset 0 0 0 6px #43141c; }
+
+
+/* --- expresion: feliz (ojos ^ ^ y sonrisa escalonada) --- */
+.asiste-btn.expr-feliz .asiste-ojo {
+  top: 18px;
+  height: 12px;
+  animation: none;
+  box-shadow: inset 0 0 0 3px var(--pix-borde), inset 0 -6px 0 0 var(--pix-borde);
+}
+.asiste-btn.expr-feliz .asiste-ojo i { opacity: 0; }
+.asiste-btn.expr-feliz .asiste-boca {
+  bottom: 8px;
+  width: 8px; height: 8px;
+  margin-left: -4px;
+  background: transparent;
+  border: 0;
+  box-shadow: 4px 4px 0 0 #2d0f13, -4px 4px 0 0 #2d0f13, 0 4px 0 0 #2d0f13;
 }
 
 
-.asiste-btn.abierto .asiste-ojo.izq span::after { content: ""; }
-.asiste-btn.abierto .asiste-cara { background: var(--pix-rojo); box-shadow: inset 0 0 0 6px #43141c; }
+/* --- expresion: piensa (pupilas arriba + puntitos) --- */
+.asiste-btn.expr-piensa .asiste-ojo i { transform: translate(1px, -5px); }
+.asiste-btn.expr-piensa .asiste-boca {
+  width: 10px; height: 4px;
+  margin-left: -5px;
+  bottom: 10px;
+  box-shadow: inset 0 -1px 0 0 #0b0c14;
+}
+.asiste-btn.expr-piensa .asiste-pens { display: flex; }
+.asiste-btn.expr-piensa::after { animation: none; background: var(--pix-ambar); }
+
+
+/* --- expresion: sorpresa (ojos grandes, boca en O) --- */
+.asiste-btn.expr-sorprendido .asiste-ojo {
+  animation: none;
+  transform: scale(1.35);
+}
+.asiste-btn.expr-sorprendido .asiste-ojo i { transform: translate(1px, 0); width: 7px; height: 11px; left: 3px; top: 3px; }
+.asiste-btn.expr-sorprendido .asiste-boca {
+  width: 12px; height: 14px;
+  margin-left: -6px;
+  bottom: 2px;
+  border-radius: 50%;
+  background: #2d0f13;
+  border: 2px solid var(--pix-borde);
+  box-shadow: none;
+}
+
+
+/* --- expresion: preocupada (cejas caidas, boca invertida, gota) --- */
+.asiste-btn.expr-preocupado .asiste-ojo { animation: none; }
+.asiste-btn.expr-preocupado .asiste-ojo.izq { transform: rotate(9deg); }
+.asiste-btn.expr-preocupado .asiste-ojo.der { transform: rotate(-9deg); }
+.asiste-btn.expr-preocupado .asiste-ojo i { transform: translate(0, -2px); }
+.asiste-btn.expr-preocupado .asiste-boca {
+  bottom: 14px;
+  width: 8px; height: 6px;
+  margin-left: -4px;
+  background: transparent;
+  border: 0;
+  box-shadow: 4px -4px 0 0 #2d0f13, -4px -4px 0 0 #2d0f13, 0 -4px 0 0 #2d0f13;
+}
 
 
 .asiste-aviso {
@@ -692,6 +801,297 @@ p.aviso {
   0%, 49% { opacity: 1; }
   50%, 100% { opacity: 0; }
 }
+@keyframes asiste-parpadeo-ojos {
+  0%, 86%, 100% { transform: scaleY(1); }
+  88%           { transform: scaleY(0.12); }
+  90%           { transform: scaleY(1); }
+  92%           { transform: scaleY(0.12); }
+  94%           { transform: scaleY(1); }
+}
+@keyframes asiste-pens-subir {
+  0%, 40%  { opacity: 0.25; transform: translateY(0); }
+  60%      { opacity: 1;    transform: translateY(-3px); }
+  100%     { opacity: 0.25; transform: translateY(0); }
+}
+@keyframes asiste-gota {
+  0%, 60%  { opacity: 1;    transform: translateY(0); }
+  100%     { opacity: 0.35; transform: translateY(5px); }
+}
 
 
 footer a { color: var(--pix-texto-3); }
+
+
+/* ===================================================================
+   FONDO ESPACIAL RELAJANTE (login / registro)
+   =================================================================== */
+.espacio {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 118%, rgba(125, 123, 255, 0.30) 0%, transparent 62%),
+    radial-gradient(ellipse 55% 40% at 18% 8%, rgba(255, 107, 214, 0.16) 0%, transparent 60%),
+    linear-gradient(180deg, #04050c 0%, #080a18 42%, #100c26 100%);
+}
+
+.estrellas {
+  position: absolute;
+  inset: -10%;
+  background-repeat: repeat;
+  will-change: background-position;
+}
+.estrellas.c1 {
+  background-image:
+    radial-gradient(1px 1px at 24px 32px, rgba(255, 255, 255, 0.75), transparent 1.6px),
+    radial-gradient(1.5px 1.5px at 150px 90px, rgba(198, 214, 255, 0.65), transparent 2px);
+  background-size: 190px 190px;
+  animation: estrellas-deriva 220s linear infinite;
+}
+.estrellas.c2 {
+  background-image:
+    radial-gradient(1px 1px at 60px 140px, rgba(255, 255, 255, 0.55), transparent 1.6px),
+    radial-gradient(2px 2px at 260px 40px, rgba(255, 220, 180, 0.55), transparent 2.6px);
+  background-size: 320px 320px;
+  animation: estrellas-deriva-2 360s linear infinite;
+}
+.estrellas.c3 {
+  background-image:
+    radial-gradient(2.5px 2.5px at 120px 200px, rgba(255, 255, 255, 0.9), transparent 3px),
+    radial-gradient(1.5px 1.5px at 400px 90px, rgba(180, 220, 255, 0.8), transparent 2.2px);
+  background-size: 520px 520px;
+  animation: estrellas-deriva-3 620s linear infinite;
+}
+
+.nebulosa {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  will-change: transform;
+}
+.nebulosa.a {
+  width: 46vw; height: 46vw;
+  left: -10vw; top: -12vw;
+  background: radial-gradient(circle, rgba(125, 123, 255, 0.42) 0%, transparent 68%);
+  animation: nebulosa-vagar 68s ease-in-out infinite;
+}
+.nebulosa.b {
+  width: 40vw; height: 40vw;
+  right: -8vw; bottom: -14vw;
+  background: radial-gradient(circle, rgba(255, 107, 214, 0.30) 0%, transparent 68%);
+  animation: nebulosa-vagar 92s ease-in-out infinite reverse;
+}
+.nebulosa.c {
+  width: 34vw; height: 34vw;
+  right: 16vw; top: -16vw;
+  background: radial-gradient(circle, rgba(62, 218, 139, 0.18) 0%, transparent 70%);
+  animation: nebulosa-vagar 120s ease-in-out infinite;
+}
+
+.planeta {
+  position: absolute;
+  right: 6vw; top: 10vh;
+  width: clamp(110px, 17vw, 210px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, #8b7bff 0%, #4a3fa8 42%, #1d1748 78%, #100c28 100%);
+  box-shadow: 0 0 70px rgba(125, 123, 255, 0.30), inset -12px -10px 0 rgba(0, 0, 0, 0.35);
+  animation: planeta-flotar 34s ease-in-out infinite;
+}
+.planeta::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 168%; height: 34%;
+  margin: -17% 0 0 -84%;
+  border: 5px solid rgba(255, 180, 61, 0.42);
+  border-radius: 50%;
+  transform: rotate(-16deg);
+}
+.planeta::after {
+  content: "";
+  position: absolute;
+  left: 22%; top: 26%;
+  width: 16%; height: 12%;
+  background: rgba(255, 255, 255, 0.10);
+  box-shadow: 22px 26px 0 rgba(255, 255, 255, 0.07), -14px 40px 0 rgba(0, 0, 0, 0.10);
+}
+.luna {
+  position: absolute;
+  left: 12vw; top: 22vh;
+  width: clamp(26px, 3.4vw, 44px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #e6e4ff 0%, #8f8ac9 60%, #4b4770 100%);
+  box-shadow: 0 0 26px rgba(230, 228, 255, 0.28);
+  animation: luna-orbitar 46s linear infinite;
+}
+
+.fugaz {
+  position: absolute;
+  top: 0; left: 0;
+  width: 130px; height: 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 100%);
+  filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.55));
+  opacity: 0;
+  animation: estrella-fugaz 22s ease-in infinite;
+}
+.fugaz.b { animation-delay: 11s; animation-duration: 31s; }
+
+.espacio-vinheta {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(4, 5, 12, 0.85) 100%);
+}
+
+
+/* --- pagina de acceso --- */
+.portal {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem 6rem;
+}
+.portal-carta {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(29, 33, 55, 0.92);
+  border: 3px solid var(--pix-borde);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.06), 0 8px 0 0 var(--pix-borde);
+  padding: 1.6rem 1.6rem 1.4rem;
+}
+.portal-cabecera {
+  text-align: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1.1rem;
+  border-bottom: 2px solid #3a4062;
+}
+.portal-cabecera .emblema {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px; height: 46px;
+  margin-bottom: 0.7rem;
+  background: #5a56d6;
+  border: 3px solid var(--pix-borde);
+  box-shadow: 0 4px 0 0 var(--pix-borde);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.campo { margin-bottom: 0.95rem; }
+.campo label {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--pix-ambar);
+  font-size: 0.5rem;
+}
+.campo input { width: 100%; }
+.portal-aviso {
+  display: none;
+  margin: 0 0 0.9rem;
+  padding: 0.55rem 0.7rem;
+  border: 2px solid var(--pix-borde);
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+.portal-aviso.mal {
+  display: block;
+  background: rgba(255, 92, 110, 0.18);
+  color: #ffc9ce;
+  box-shadow: inset 0 0 0 2px rgba(255, 92, 110, 0.35);
+}
+.portal-aviso.bien {
+  display: block;
+  background: rgba(62, 218, 139, 0.16);
+  color: #c8ffdc;
+  box-shadow: inset 0 0 0 2px rgba(62, 218, 139, 0.35);
+}
+.portal-pie {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 2px solid #3a4062;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--pix-texto-3);
+}
+.portal-pie a { color: var(--pix-ambar); }
+.portal-pista {
+  margin-top: 0.9rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--pix-texto-3);
+}
+.portal-pista code { color: var(--pix-ambar); }
+
+
+@keyframes estrellas-deriva {
+  from { background-position: 0 0; }
+  to   { background-position: -190px 190px; }
+}
+@keyframes estrellas-deriva-2 {
+  from { background-position: 0 0; }
+  to   { background-position: 320px -320px; }
+}
+@keyframes estrellas-deriva-3 {
+  from { background-position: 0 0; }
+  to   { background-position: -520px 520px; }
+}
+@keyframes nebulosa-vagar {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(4vw, 3vh, 0) scale(1.12); }
+}
+@keyframes planeta-flotar {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-18px) rotate(6deg); }
+}
+@keyframes luna-orbitar {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(9vw, -3vh); }
+  50%  { transform: translate(18vw, 2vh); }
+  75%  { transform: translate(9vw, 6vh); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes estrella-fugaz {
+  0%, 74%   { opacity: 0; transform: translate3d(-6vw, 0, 0) rotate(16deg); }
+  76%       { opacity: 0.95; }
+  88%, 100% { opacity: 0; transform: translate3d(72vw, 26vh, 0) rotate(16deg); }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .estrellas, .nebulosa, .planeta, .luna, .fugaz,
+  .asiste-btn, .asiste-btn::after, .asiste-ojo, .asiste-pens i,
+  .asiste-cara::after, .asiste-cursor {
+    animation: none !important;
+  }
+  .asiste-ojo i, .asiste-boca, .asiste-cara { transition: none; }
+}
+
+
+@media (max-width: 640px) {
+  .portal { padding: 1.4rem 0.85rem 6.5rem; }
+  .portal-carta { padding: 1.2rem 1.1rem 1.1rem; }
+  .campo { margin-bottom: 0.75rem; }
+  .portal-pista { margin-top: 0.7rem; }
+  .portal-pie { margin-top: 0.7rem; padding-top: 0.7rem; }
+
+  .asiste-caja {
+    bottom: 10px;
+    right: 10px;
+    transform: scale(0.72);
+    transform-origin: bottom right;
+  }
+  .asiste-panel {
+    width: min(300px, calc(100vw - 28px));
+    bottom: 100px;
+    right: 12px;
+    max-height: 62vh;
+  }
+}
+

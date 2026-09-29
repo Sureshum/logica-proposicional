@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso · Lógica Proposicional</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/estilos.css">
+</head>
+<body data-pagina="login" class="min-h-screen">
+
+  <div class="espacio" aria-hidden="true">
+    <div class="nebulosa a"></div>
+    <div class="nebulosa b"></div>
+    <div class="nebulosa c"></div>
+    <div class="estrellas c1"></div>
+    <div class="estrellas c2"></div>
+    <div class="estrellas c3"></div>
+    <div class="planeta"></div>
+    <div class="luna"></div>
+    <div class="fugaz"></div>
+    <div class="fugaz b"></div>
+    <div class="espacio-vinheta"></div>
+  </div>
+
+  <main class="portal">
+
+    <section class="portal-carta">
+      <div class="portal-cabecera">
+        <span class="emblema">∨</span>
+        <h1 class="pixel-titulo text-slate-800">Lógica Proposicional</h1>
+        <p class="text-slate-500 text-sm mt-2">Acceso al sistema · cuenta local del navegador</p>
+      </div>
+
+      <div class="portal-aviso" id="portal-aviso" role="status" aria-live="polite"></div>
+
+      <form id="form-login" novalidate>
+        <div class="campo">
+          <label for="usuario">Usuario</label>
+          <input type="text" id="usuario" name="usuario" autocomplete="username"
+                 placeholder="admin" spellcheck="false" required>
+        </div>
+        <div class="campo">
+          <label for="clave">Clave</label>
+          <input type="password" id="clave" name="clave" autocomplete="current-password"
+                 placeholder="••••" required>
+        </div>
+        <button type="submit" class="btn-pixel btn-verde w-full">Entrar al sistema</button>
+      </form>
+
+      <p class="portal-pista">
+        ¿Es tu primera vez? <a href="registro.html">Crea una cuenta</a><br>
+        <button type="button" id="usar-demo" class="btn-pixel btn-ambar mt-3">Usar admin / 1234</button>
+      </p>
+
+      <p class="portal-pie">
+        Sistema 100% navegador: los datos de la cuenta se guardan solo en este dispositivo.
+      </p>
+    </section>
+
+  </main>
+
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/portal.js"></script>
+  <script src="assets/js/asistente.js"></script>
+</body>
+</html>

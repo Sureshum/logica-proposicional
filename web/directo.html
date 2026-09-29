@@ -8,7 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/estilos.css">
+  <script src="assets/js/auth.js"></script>
+  <script>Auth.protegerPagina();</script>
 </head>
 <body data-pagina="directo" class="min-h-screen flex flex-col">
 
@@ -18,12 +21,13 @@
         <span class="inline-flex items-center justify-center w-9 h-9 border-2 border-black bg-indigo-500 text-2xl text-white shadow-[0_3px_0_#0b0c14]">∨</span>
         <span class="pixel-titulo text-white hidden sm:inline">Lógica Proposicional</span>
       </a>
-      <div class="flex items-center gap-1 text-sm">
+      <div class="flex flex-wrap items-center justify-end gap-1 text-sm">
         <a href="directo.html" class="nav-enlace activo">Directo</a>
         <a href="inverso.html" class="nav-enlace">Inverso</a>
         <a href="ml.html" class="nav-enlace">Asistente IA</a>
         <span class="mx-1 text-slate-500">|</span>
-        <span class="px-2 text-slate-300">versión navegador</span>
+        <span class="px-2 text-slate-300" data-slot="usuario">invitado</span>
+        <button type="button" class="nav-enlace" data-slot="salir" hidden>Salir</button>
       </div>
     </div>
   </nav>
@@ -126,6 +130,7 @@
   <script src="assets/js/generador.js"></script>
   <script src="assets/js/nlp.js"></script>
   <script src="assets/js/ml.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/asistente.js"></script>
   <script>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro · Lógica Proposicional</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/estilos.css">
+</head>
+<body data-pagina="registro" class="min-h-screen">
+
+  <div class="espacio" aria-hidden="true">
+    <div class="nebulosa a"></div>
+    <div class="nebulosa b"></div>
+    <div class="nebulosa c"></div>
+    <div class="estrellas c1"></div>
+    <div class="estrellas c2"></div>
+    <div class="estrellas c3"></div>
+    <div class="planeta"></div>
+    <div class="luna"></div>
+    <div class="fugaz"></div>
+    <div class="fugaz b"></div>
+    <div class="espacio-vinheta"></div>
+  </div>
+
+  <main class="portal">
+
+    <section class="portal-carta">
+      <div class="portal-cabecera">
+        <span class="emblema">∨</span>
+        <h1 class="pixel-titulo text-slate-800">Crear cuenta</h1>
+        <p class="text-slate-500 text-sm mt-2">Registro local · sin servidor</p>
+      </div>
+
+      <div class="portal-aviso" id="portal-aviso" role="status" aria-live="polite"></div>
+
+      <form id="form-registro" novalidate>
+        <div class="campo">
+          <label for="nombre">Nombre para mostrar (opcional)</label>
+          <input type="text" id="nombre" name="nombre" placeholder="Estudiante de lógica" spellcheck="false">
+        </div>
+        <div class="campo">
+          <label for="usuario">Usuario</label>
+          <input type="text" id="usuario" name="usuario" autocomplete="username"
+                 placeholder="min. 3 caracteres" spellcheck="false" required>
+        </div>
+        <div class="campo">
+          <label for="clave">Clave</label>
+          <input type="password" id="clave" name="clave" autocomplete="new-password"
+                 placeholder="min. 4 caracteres" required>
+        </div>
+        <div class="campo">
+          <label for="repetir">Repetir clave</label>
+          <input type="password" id="repetir" name="repetir" autocomplete="new-password"
+                 placeholder="••••" required>
+        </div>
+        <button type="submit" class="btn-pixel btn-azul w-full">Crear cuenta y entrar</button>
+      </form>
+
+      <p class="portal-pie">
+        ¿Ya tienes cuenta? <a href="login.html">Volver al acceso</a>
+      </p>
+    </section>
+
+  </main>
+
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/portal.js"></script>
+  <script src="assets/js/asistente.js"></script>
+</body>
+</html>

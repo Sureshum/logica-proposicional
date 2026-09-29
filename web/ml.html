@@ -8,7 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/estilos.css">
+  <script src="assets/js/auth.js"></script>
+  <script>Auth.protegerPagina();</script>
 </head>
 <body data-pagina="ml" class="min-h-screen flex flex-col">
 
@@ -18,19 +21,20 @@
         <span class="inline-flex items-center justify-center w-9 h-9 border-2 border-black bg-indigo-500 text-2xl text-white shadow-[0_3px_0_#0b0c14]">∨</span>
         <span class="pixel-titulo text-white hidden sm:inline">Lógica Proposicional</span>
       </a>
-      <div class="flex items-center gap-1 text-sm">
+      <div class="flex flex-wrap items-center justify-end gap-1 text-sm">
         <a href="directo.html" class="nav-enlace">Directo</a>
         <a href="inverso.html" class="nav-enlace">Inverso</a>
         <a href="ml.html" class="nav-enlace activo">Asistente IA</a>
         <span class="mx-1 text-slate-500">|</span>
-        <span class="px-2 text-slate-300">versión navegador</span>
+        <span class="px-2 text-slate-300" data-slot="usuario">invitado</span>
+        <button type="button" class="nav-enlace" data-slot="salir" hidden>Salir</button>
       </div>
     </div>
   </nav>
 
   <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-8 relative z-10">
 
-    <div class="flex items-start justify-between gap-4 mb-6">
+    <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
       <div>
         <h1 class="pixel-titulo text-slate-800">Asistente inteligente (Machine Learning)</h1>
         <p class="text-sm text-slate-500">
@@ -138,6 +142,7 @@
   <script src="assets/js/generador.js"></script>
   <script src="assets/js/nlp.js"></script>
   <script src="assets/js/ml.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/asistente.js"></script>
   <script>
@@ -163,9 +168,8 @@
                <td class="px-2 py-1 text-center">${(fila.f1 * 100).toFixed(1)}%</td>
              </tr>`).join('');
 
-          const links = 'Esta versión es 100% navegador: se usa <strong>k-NN (k=5)</strong> ' +
-            'implementado en JavaScript. No hay servidor: el dataset se genera y el modelo ' +
-            'se entrena aquí mismo, en tu navegador.';
+          const links = 'El sistema usa <strong>k-NN (k=5)</strong> implementado en JavaScript. ' +
+            'No hay servidor: el dataset se genera y el modelo se entrena aquí mismo, en tu navegador.';
 
           detalle.innerHTML = `
             <div class="space-y-2 text-sm">

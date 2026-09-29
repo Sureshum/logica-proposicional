@@ -1,108 +1,133 @@
 # Propositional Logic System
 
-[![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)](#) [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000)](#)  [![HTML](https://img.shields.io/badge/HTML-%23E34F26.svg?logo=html5&logoColor=white)](#) [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-%2338B2AC.svg?logo=tailwind-css&logoColor=white)](#)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=000)](#)  [![HTML](https://img.shields.io/badge/HTML-%23E34F26.svg?logo=html5&logoColor=white)](#) [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-%2338B2AC.svg?logo=tailwind-css&logoColor=white)](#)
 
-A Flask web application to study and practice **Propositional Logic**: building
-Well-Formed Formulas (WFF), semantic analysis with truth tables, and a
-**Machine Learning** assistant that classifies propositions and translates
-natural language into logical symbols.
+Sistema web para estudiar y practicar **Lógica Proposicional**: construcción de
+Fórmulas Bien Formadas (FBF), análisis semántico con tablas de verdad y un
+**asistente de Machine Learning** que clasifica proposiciones y traduce español
+a símbolos lógicos.
 
-> Default account: `admin` / `1234`
+> **Una sola versión:** todo corre en el navegador (HTML + CSS + JavaScript).
+> No hay servidor, ni Python, ni base de datos. Se despliega en **GitHub Pages**.
 
-There are **two running versions** of the same system:
-
-1. **Flask web app** (this repo's root): Python backend + HTML/JS frontend.
-2. **100% browser version** (the `web/` folder): all the logic ported to
-   JavaScript, deployed to **GitHub Pages** (no server, no login).
+- Sitio publicado: <https://Sureshum.github.io/logica-proposicional/>
+- Cuenta por defecto: **`admin` / `1234`** (también puedes crear la tuya en *REGISTRO*).
 
 ---
 
-## 1. What the system does
+## 1. Módulos
 
-Three main modules:
+| Módulo | Qué hace | Página |
+|--------|----------|--------|
+| **Directo** | Construyes FBF paso a paso: defines proposiciones (p = "Llueve") y las combinas con conectivos (¬ ∧ ∨ → ↔). | `directo.html` |
+| **Inverso** | Escribes una FBF y el sistema la desarma: forma canónica, átomos, lectura en español, clasificación, tabla de verdad y árbol sintáctico. | `inverso.html` |
+| **Asistente IA** | Predice si una FBF es Tautología / Contradicción / Contingencia y traduce oraciones ("Llueve y hace frío") a forma simbólica. | `ml.html` |
 
-| Module | What it does | Route |
-|--------|--------------|-------|
-| **Direct** | Builds WFFs step by step: you define propositions (p="It rains") and combine them with connectives (¬ ∧ ∨ → ↔). | `/directo` |
-| **Inverse** | You type a ready-made WFF and the system breaks it down: canonical form, atoms, natural-language reading, classification, truth table and syntax tree. | `/inverso` |
-| **AI Assistant** | Predicts whether a WFF is a Tautology / Contradiction / Contingency and translates Spanish sentences ("Llueve y hace frío") into symbolic form via NLP. | `/ml` |
-
-The whole app is **web-based**: the logic lives in Python (Flask) and the UI
-uses HTML + Tailwind + JavaScript with a **pixel art** theme (retro 8-bit).
+Todo con estética **pixel art** (retro 8-bit) y el asistente virtual **BOOLE**.
 
 ---
 
-## 2. Project structure
+## 2. Estructura del proyecto
 
 ```
-logica-proposicional/
-├── app.py                     # Flask server: routes (pages + JSON API)
-├── requirements.txt           # Dependencies
-├── logica/                    # DOMAIN: pure propositional logic
-│   ├── parser.py              # Tokenizer + recursive descent parser (AST)
-│   ├── semantica.py           # Evaluation, truth tables and classification
-│   └── generador.py           # Random WFF generator (ML dataset)
-├── ml/                        # MACHINE LEARNING
-│   ├── features.py            # Syntactic feature vector of a WFF
-│   ├── dataset.py             # Training dataset construction (X, y)
-│   ├── modelo.py              # RandomForest (scikit-learn) or pure k-NN (fallback)
-│   └── nlp.py                 # Spanish → WFF translation by rules (NLP)
-├── templates/                 # HTML templates (Jinja2)
-│   ├── base.html              # Base layout (nav, virtual assistant, footer)
-│   ├── login.html / panel.html / directo.html / inverso.html / ml.html
-├── static/
-│   ├── css/estilos.css        # Pixel art theme + BOOLE assistant styles
-│   └── js/
-│       ├── app.js             # Shared JS utilities (esc, apiFetch)
-│       └── asistente.js       # BOOLE virtual assistant (per-page guide)
-└── data/                      # (optional persistence)
+web/                          # raíz del sitio (lo que publica GitHub Pages)
+├── index.html                # panel principal (protegido con sesión)
+├── login.html                # acceso · con fondo espacial animado
+├── registro.html             # alta de cuenta local
+├── directo.html              # módulo directo
+├── inverso.html              # módulo inverso
+├── ml.html                   # asistente de Machine Learning
+└── assets/
+    ├── favicon.svg           # carita pixel de BOOLE
+    ├── css/estilos.css       # tema pixel art, fondo espacial y estilos de BOOLE
+    └── js/
+        ├── parser.js         # LogicaParser  (tokenizador + parser descendente)
+        ├── semantica.js      # Semantica     (evaluación, tablas de verdad, clasificación)
+        ├── generador.js      # Generador     (FBF aleatorias para el dataset)
+        ├── nlp.js            # Nlp           (español → FBF por reglas)
+        ├── ml.js             # ML            (características + dataset + k-NN)
+        ├── auth.js           # Auth          (cuentas y sesión en localStorage)
+        ├── portal.js         # lógica de los formularios de acceso y registro
+        ├── app.js            # utilidades (esc)
+        └── asistente.js      # BOOLE (asistente con expresiones)
 ```
 
-**Request flow:**
-
-```
-Browser (HTML/JS)  →  fetch to /api/*  →  app.py (Flask)
-                                            ├─ logica.parser    (validate/parse)
-                                            ├─ logica.semantica (truth tables/class)
-                                            ├─ logica.generador (random)
-                                            └─ ml.*             (predict/NLP)
-                                            → JSON → Browser renders
-```
+Cada módulo JS se publica en el ámbito global (`window.LogicaParser`,
+`window.Semantica`, `window.Generador`, `window.Nlp`, `window.ML`, `window.Auth`),
+así que las páginas llaman directamente a la lógica, sin peticiones HTTP.
 
 ---
 
-## 3. Key concepts before reading the code
+## 3. Acceso y registro (100% local)
 
-- **Atomic proposition**: a variable (p, q, r…) with a meaning like "It rains".
-- **WFF (Well-Formed Formula)**: a proposition built from atoms and logical
-  connectives with correct parentheses. E.g.: `(p ∧ q) → ¬r`.
-- **AST**: Abstract Syntax Tree. Every WFF becomes a tree of nodes
-  (`AtomNode`, `NegNode`, `BinNode`) so it can be evaluated.
-- **Connectives** and their precedence (highest to lowest): **¬** < **∧** < **∨** < **→** < **↔**.
-- **Tautology**: always true (`p ∨ ¬p`). **Contradiction**: always false
-  (`p ∧ ¬p`). **Contingency**: depends on the assignment (`p → q`).
+`assets/js/auth.js` implementa las cuentas **en el navegador**:
+
+| Función | Qué hace |
+|---------|----------|
+| `Auth.registrar({nombre, usuario, clave, repetir})` | Valida (mín. 3 caracteres de usuario, mín. 4 de clave, claves iguales, usuario único), crea la cuenta y abre sesión. |
+| `Auth.entrar(usuario, clave)` | Comprueba la clave y guarda la sesión. |
+| `Auth.salir()` | Borra la sesión. |
+| `Auth.sesion()` / `Auth.usuarioActual()` | Lee la sesión activa. |
+| `Auth.protegerPagina()` | Si no hay sesión, redirige a `login.html?volver=<página>` (y recuerda a dónde volver). |
+
+- Las cuentas viven en `localStorage` (`logica.usuarios`) y la sesión en
+  `logica.sesion`.
+- Las claves **no se guardan en claro**: se almacena su hash SHA-256
+  (`crypto.subtle`, con alternativa por si el navegador no lo soporta).
+- `auth.js` siembra la cuenta `admin / 1234` la primera vez.
+- Cada página protegida incluye en el `<head>`:
+  `Auth.protegerPagina()` → si no hay sesión, redirige antes de pintar nada.
+- La barra superior muestra `@usuario` y el botón **SALIR**.
+
+> Ojo: al no haber servidor, la "seguridad" es la de un candado de juguete —
+> sirve para organizar el trabajo, no para proteger datos sensibles.
+
+### Fondo espacial del acceso
+
+`login.html` y `registro.html` llevan un fondo animado y lento (nada de
+parpadeos): tres capas de estrellas a la deriva (`background-position` en
+220 s / 360 s / 620 s), tres nebulosas con `blur` que vagan, un planeta con
+anillo y una luna, estrellas fugaces y una viñeta. Con
+`prefers-reduced-motion: reduce` todo se detiene.
 
 ---
 
-## 4. The `logica` module (pure domain; doesn't touch Flask or HTML)
+## 4. El asistente BOOLE
 
-### `logica/parser.py` — syntactic analysis
+`assets/js/asistente.js` crea el muñeco de la esquina inferior derecha.
 
-Converts text into an AST and validates it. Key functions:
+**Solo se abre si lo pulsas.** No hay auto-apertura: el panel permanece
+cerrado hasta que pulsas su cabeza (o el cartel de invitación, que desaparece
+solo a los 14 s). El rótulo del panel (`EN LINEA`, `PENSANDO...`…) acompaña al
+estado de la cara.
 
-| Function | What it does |
-|----------|--------------|
-| `parsear(texto)` | Tokenizes and parses a string. Returns the **AST** or raises `FBFError`. It's the module's entry point. |
-| `es_fbf(texto)` | `parsear` wrapper returning `True`/`False` without raising. |
-| `_canonicalizar(texto)` | Maps ASCII aliases (`=>`, `&`, `~`…) to Unicode symbols (`→`, `∧`, `¬`). |
-| `_tokenizar(texto)` | Splits text into `(type, value)` tokens: `PAREN`, `OP`, `ATOM`. |
-| `a_cadena(nodo)` | Serializes the AST back to canonical form (no redundant parentheses). |
-| `atomos(nodo)` | Lists the atomic propositions (no duplicates, in order of appearance). |
-| `render_es(nodo, nombres)` | Reads the formula in Spanish: with `{p: "llueve"}` it produces "no llueve", "(llueve y hace frío)"… |
-| `arbol_html(nodo)` | Generates the syntax-tree HTML for the UI. |
-| `profundidad(nodo)` / `contar_nodos(nodo)` | Tree metrics (used as ML features). |
+### Expresiones
 
-**How parsing works** (EBNF grammar via *recursive descent*):
+| Expresión | Cuándo | Cómo se ve |
+|-----------|--------|------------|
+| `idle` | En reposo | Ojos con **parpadeo doble** automático (5,4 s) y neutros. |
+| `piensa` | Mientras escribe el texto letra a letra | Pupilas hacia arriba, boca pequeña y nube de puntos sobre la cabeza. |
+| `feliz` | Al terminar el saludo / al responderte | Ojos en arco `^ ^` y sonrisa escalonada. |
+| `preocupado` | Al cerrar el panel | Ojos caídos, boca invertida y gota de sudor. |
+| `sorprendido` | Gesto suelto en reposo (cada 9–18 s) | Ojos grandes y boca en `O`. |
+
+Las expresiones se controlan con clases en el botón
+(`expr-feliz`, `expr-piensa`, `expr-sorprendido`, `expr-preocupado`) y se dibujan
+solo en CSS. Con `prefers-reduced-motion` se anulan parpadeos y gestos.
+
+El guion (saludo, pasos y consejos rápidos) cambia según la página gracias al
+atributo `data-pagina` del `<body>`: `login`, `registro`, `panel`, `directo`,
+`inverso` y `ml`.
+
+---
+
+## 5. Lógica y Machine Learning (en JavaScript)
+
+### `parser.js` — análisis sintáctico
+
+`LogicaParser.parsear(texto)` devuelve el **AST** o lanza error. También
+`aCadena(nodo)`, `atomos(nodo)`, `renderEs(nodo, nombres)`, `arbolHtml(nodo)`,
+`profundidad` y `contar_nodos`.
 
 ```
 fbf      := bicond
@@ -114,196 +139,79 @@ neg      := ( '¬' )* primario
 primario := '(' fbf ')' | ATOMO
 ```
 
-Each rule is a method of the `_Parser` class (`_bicond`, `_cond`, `_disj`, `_conj`,
-`_neg`, `_primario`). The `fbf()` method starts with the **lowest-precedence** rule
-(biconditional) and descends. Parentheses jump to the `primario` rule, which calls
-`fbf()` again (recursion).
+Acepta también los alias ASCII: `~`, `&`, `|`, `=>`, `<=>`.
 
-### `logica/semantica.py` — evaluation and classification
+### `semantica.js` — semántica
 
-| Function | What it does |
-|----------|--------------|
-| `evaluar(nodo, asignacion)` | Evaluates the AST with `True/False` values for each atom. Implements the truth tables for ¬ ∧ ∨ → ↔. |
-| `tabla_verdad(nodo)` | Iterates over the **Cartesian product** of all assignments and stores the results. |
-| `tabla_verdad_completa(nodo)` | Same but with **one column per subformula** (for the UI). |
-| `clasificar(nodo)` | Based on the values: 0 false → **Tautology**; 0 true → **Contradiction**; otherwise → **Contingency**. |
-| `tabla_html(datos)` | Renders the truth table as HTML. |
+`Semantica.evaluar(nodo, asignacion)`, `tablaVerdad(nodo)`,
+`tablaVerdadCompleta(nodo)`, `clasificar(nodo)` y `tablaHtml(datos)`.
+Límite de 5 átomos por tabla (2ⁿ filas).
 
-Important detail: `MAX_ATOMOS_TABLA = 5`, because the table grows as `2^n` rows;
-with more than 5 atoms the table is omitted and the class becomes "Not determinable".
+### `ml.js` — clasificador
 
-Operators (in `evaluar`):
+1. `features`: vector de 12 números (nº de variables, negaciones, cada
+   conectivo, profundidad, nodos, parejas complementarias `A`/`¬A`, ratio de
+   negaciones).
+2. `dataset`: ~1000 FBF **balanceadas** generadas con semilla 42. Las
+   tautologías se construyen como `F ∨ ¬F` y las contradicciones como `F ∧ ¬F`.
+3. `modelo`: **k-NN (k=5)** con normalización z-score, propio y en JS.
+4. Entrenamiento **perezoso**: la primera llamada a `ML.info()` o
+   `ML.predecir()` entrena en memoria; `ML.reentrenar(n)` rehace el dataset.
 
-```python
-izq ∧ der  →  izq and der
-izq ∨ der  →  izq or der
-izq → der  →  (not izq) or der      # only fails on V → F
-izq ↔ der  →  izq == der
+### `nlp.js` — español → FBF
+
 ```
-
-### `logica/generador.py` — random WFFs (ML dataset)
-
-| Function | What it does |
-|----------|--------------|
-| `proposicion_aleatoria(simbolos)` | Random proposition for practice (with meanings and reading). |
-| `generar_instancia(categoria)` | Generates **one** WFF labeled with its real class (confirmed via its truth table). |
-| `generar_dataset(n, semilla)` | **Balanced** dataset (~n/3 per class). Key trick: tautologies are built as `F ∨ ¬F` and contradictions as `F ∧ ¬F`. |
-| `resumen_dataset(datos)` | Count per class (to display in the UI). |
+"p si y solo si q" → p ↔ q
+"si p entonces q"  → p → q
+"p solo si q"      → p → q
+"y" → ∧   "o" → ∨   "no" → ¬
+```
 
 ---
 
-## 5. The `ml` module (Machine Learning)
+## 6. Ejecutar en local
 
-**Complete pipeline:**
-
-```
-generator (labeled WFFs)
-   → features (numeric vector per formula)
-   → dataset (X, y, 80/20 split)
-   → model (RandomForest or k-NN)
-   → prediction ("Tautology" + probabilities)
+```bash
+python -m http.server 8000 --directory web    # http://localhost:8000
 ```
 
-### `ml/features.py` — features
+También vale cualquier servidor estático (VS Code Live Server, `npx serve web`).
+Abre `http://localhost:8000/`: entrarás al login. Entra con `admin` / `1234` o
+crea una cuenta.
 
-`extraer_caracteristicas(nodo)` returns a **12-number vector** describing the
-*shape* of the formula (without evaluating its truth table), e.g.:
-
-- number of variables, negations, ∧, ∨, →, ↔,
-- tree depth and node count,
-- **complementary pairs**: how many variables appear both as `A` and `¬A`
-  (key: `A ∧ ¬A` → contradiction; `A ∨ ¬A` → tautology),
-- negation ratio.
-
-### `ml/dataset.py` — training data
-
-- `CLASES` / `CLASE_A_INDICE`: text ↔ index mapping (Contradiction=0, Contingency=1, Tautology=2).
-- `construir_dataset(n, semilla)`: generates the dataset, performs the
-  **train/test** 80/20 split (reproducible by seed) and returns `X_train, y_train, X_test, y_test`.
-
-### `ml/modelo.py` — the classifier
-
-System with **two interchangeable engines** (same interface):
-
-| Engine | When | How it works |
-|--------|------|--------------|
-| **Random Forest** (`RandomForestClassifier`, 200 trees) | If `scikit-learn` is installed | Ensemble of decision trees. |
-| **Own k-NN** (`_KNN` class, k=5) | If NOT installed | Nearest neighbors in pure Python, with **z-score normalization** of features. |
-
-Public functions:
-
-| Function | What it does |
-|----------|--------------|
-| `ModeloFBF.entrenar(data)` | Trains the model and computes metrics (accuracy, precision, recall, F1 per class). |
-| `ModeloFBF.predecir(formula)` | Classifies a **text WFF** and returns `{clase, probabilidades}`. |
-| `predecir_vector(vector)` | Same but from already-computed features. |
-| `reentrenar(n, semilla)` | Builds a new dataset and retrains. |
-| `obtener_modelo()` | **Lazy** model: trained on first call and cached in memory. |
-| `info_modelo()` | Data for the UI (algorithm used, metrics, dataset size). |
-
-### `ml/nlp.py` — Spanish → WFF by rules
-
-| Function | What it does |
-|----------|--------------|
-| `oracion_a_fbf(oracion, simbolos)` | Entry point: normalizes, substitutes meanings for symbols, detects connectives and validates with the parser. |
-| `_traducir(oracion)` | Translates **recursively**: first explicit parentheses, then ↔, then "if…then" →, then ∨, then ∧, then "not" → ¬. |
-| `parsear_asignaciones(texto)` | Converts `"p: Llueve, q: Hace frío"` into `{"p": "llueve", ...}`. |
+> Abrir `index.html` con doble clic (protocolo `file://`) **no funciona**: el
+> login necesita `localStorage` y un origen web.
 
 ---
 
-## 6. `app.py` — the Flask server
+## 7. Desplegar en GitHub Pages
 
-`app.py` separates **pages** (HTML) from **APIs** (JSON, consumed with `fetch`).
-All `/api/*` routes require a session (`@login_requerido`).
-
-**Pages:**
-
-| Route | Function | Serves |
-|-------|----------|--------|
-| `/` | `inicio()` | Redirects to panel or login depending on session |
-| `/login` (GET/POST) | `login()` | Authentication (admin/1234) |
-| `/logout` | `logout()` | Closes session |
-| `/panel`, `/directo`, `/inverso`, `/ml` | `panel`, `directo`, `inverso`, `ml` | Renders each template |
-
-**APIs (JSON):**
-
-| Endpoint | Function | Use |
-|----------|----------|-----|
-| `POST /api/generar` | `api_generar` | Generates a random proposition (avoids collisions with symbols in use) |
-| `POST /api/directo/agregar` | `api_directo_agregar` | Validates and adds a simple proposition |
-| `POST /api/directo/negar` | `api_directo_negar` | Applies `¬` to a formula |
-| `POST /api/directo/combinar` | `api_directo_combinar` | Combines A and B with a connective `(∧ ∨ → ↔)` |
-| `POST /api/inverso` | `api_inverso` | Analyzes a complete WFF (canonical, atoms, class, table, tree) |
-| `GET /api/ml/estado` | `api_ml_estado` | Info about the trained model |
-| `POST /api/ml/clasificar` | `api_ml_clasificar` | Predicts the class of a WFF |
-| `POST /api/ml/nlp` | `api_ml_nlp` | Translates a sentence into a WFF and classifies it |
-| `POST /api/ml/reentrenar` | `api_ml_reentrenar` | Retrains with N new instances |
-
----
-
-## 8. Browser-only version (`web/`) + GitHub Pages
-
-The same system also exists as a **100% static** version. Every logic module was
-ported to JavaScript, so it runs entirely in the browser and can be hosted
-anywhere that serves static files — e.g. **GitHub Pages**.
-
-> Deployed site: **<https://Sureshum.github.io/logica-proposicional/>**
-
-### Structure
-
-```
-web/                          # static site root (what GitHub Pages serves)
-├── index.html                # panel (same as /panel)
-├── directo.html              # Direct module
-├── inverso.html              # Inverse module
-├── ml.html                   # AI Assistant
-└── assets/
-    ├── css/estilos.css       # pixel-art theme (same as the Flask version)
-    └── js/
-        ├── parser.js         # LogicaParser  (port of logica/parser.py)
-        ├── semantica.js      # Semantica     (port of logica/semantica.py)
-        ├── generador.js      # Generador     (port of logica/generador.py)
-        ├── nlp.js            # Nlp           (port of ml/nlp.py)
-        ├── ml.js             # ML            (features + balanced dataset + k-NN, port of ml/*)
-        ├── app.js            # shared esc()
-        └── asistente.js      # BOOLE assistant (same as Flask version)
-```
-
-### Deploy to GitHub Pages
-
-The workflow `.github/workflows/pages.yml` runs on every push to `master`,
-uploads the `web/` folder and publishes it. The Pages **source** is
-**GitHub Actions** (`build_type=workflow`).
-
-One-time setup (already done for this repo):
+El workflow `.github/workflows/pages.yml` sube la carpeta `web/` en cada push a
+`master` y publica el sitio. Configuración una sola vez:
 
 ```bash
 gh api -X PUT /repos/Sureshum/logica-proposicional/pages -f build_type=workflow
 ```
 
-Manual alternative: *Settings → Pages → Source: "GitHub Actions"*.
-
-To test the static version locally:
-
-```bash
-python -m http.server 8000 --directory web   # http://localhost:8000
-```
+Alternativa manual: *Settings → Pages → Source: "GitHub Actions"*.
 
 ---
 
-## 9. How to run it (Flask version)
+## 8. Ideas para estudiar / extender
 
-```bash
-pip install -r requirements.txt        # only Flask is required
-python app.py                          # server at http://localhost:5000
-```
-
-- Without `scikit-learn` the ML still works via the **own k-NN** (no external dependencies).
-- If you install `scikit-learn` you'll automatically use Random Forest.
+1. **Más conectivos** (NAND `↑`, NOR `↓`): toca `SIMBOLOS`, los nombres de
+   operadores, la gramática de `parser.js` y `evaluar` en `semantica.js`.
+2. **Reglas de inferencia** (Modus Ponens…): recorre el AST con
+   `LogicaParser.parsear` y reconstruye con `NegNode` / `BinNode`.
+3. **Más características ML**: añade una columna al vector de `features.js`; el
+   dataset y el modelo la adoptan solos.
+4. **De Morgan**: transforma el AST (`¬(p ∧ q)` → `¬p ∨ ¬q`) recorriéndolo y
+   reconstruyéndolo.
+5. **Borrar la cuenta**: `localStorage.removeItem("logica.usuarios")` desde la
+   consola del navegador.
 
 ---
 
 <a href="https://github.com/Sureshum">
   <img src="https://media1.tenor.com/m/ki07u04jVnwAAAAC/gigi-murin-hololive-english.gif" width="100%" alt="Header Banner" />
 </a>
-   

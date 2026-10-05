@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Módulo Directo · Construcción de FBF</title>
+  <title>Mdulo Directo  Construccin de FBF</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,8 +19,8 @@
   <nav class="bg-slate-900 border-b-4 border-black shadow-lg relative z-10">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
       <a href="index.html" class="flex items-center gap-2 font-semibold">
-        <span class="inline-flex items-center justify-center w-9 h-9 border-2 border-black bg-indigo-500 text-2xl text-white shadow-[0_3px_0_#0b0c14]">∨</span>
-        <span class="pixel-titulo text-white hidden sm:inline">Lógica Proposicional</span>
+        <span class="inline-flex items-center justify-center w-9 h-9 border-2 border-black bg-indigo-500 text-2xl text-white shadow-[0_3px_0_#0b0c14]"></span>
+        <span class="pixel-titulo text-white hidden sm:inline">Lgica Proposicional</span>
       </a>
       <div class="flex flex-wrap items-center justify-end gap-1 text-sm">
         <a href="directo.html" class="nav-enlace activo">Directo</a>
@@ -37,28 +37,28 @@
 
     <div class="flex items-start justify-between gap-4 mb-6">
       <div>
-        <h1 class="pixel-titulo text-slate-800">Módulo Directo</h1>
+        <h1 class="pixel-titulo text-slate-800">Mdulo Directo</h1>
         <p class="text-sm text-slate-500">
-          Construcción de proposiciones moleculares → Fórmula Bien Formada (FBF).
+          Construccin de proposiciones moleculares  Frmula Bien Formada (FBF).
         </p>
       </div>
     </div>
 
     <section class="caja p-6 mb-6">
-      <h2 class="pixel-titulo text-slate-700 mb-1">1 · Proposiciones simples</h2>
+      <h2 class="pixel-titulo text-slate-700 mb-1">1  Proposiciones simples</h2>
       <p class="text-sm text-slate-500 mb-4">
         Define variables con su significado. Cada variable se convierte en una
-        tarjeta que podrás negar o combinar.
+        tarjeta que podrs negar o combinar.
       </p>
 
       <div class="grid sm:grid-cols-[140px_1fr_auto_auto] gap-2">
-        <input id="nuevo-simbolo" type="text" maxlength="12" placeholder="símbolo (p, q…)"
+        <input id="nuevo-simbolo" type="text" maxlength="12" placeholder="smbolo (p, q)"
                class="px-3 py-2 border border-slate-300 focus:ring-2 focus:ring-indigo-400 outline-none">
-        <input id="nuevo-descripcion" type="text" placeholder='Descripción, ej. "Llueve"'
+        <input id="nuevo-descripcion" type="text" placeholder='Descripcin, ej. "Llueve"'
                class="px-3 py-2 border border-slate-300 focus:ring-2 focus:ring-indigo-400 outline-none">
-        <button onclick="agregarAtomo()" class="btn-pixel btn-azul">+ Añadir</button>
-        <button onclick="generarAleatoria()" title="Genera una proposición al azar con su significado"
-                class="btn-pixel btn-rosa">⚡ Generar</button>
+        <button onclick="agregarAtomo()" class="btn-pixel btn-azul">+ Aadir</button>
+        <button onclick="generarAleatoria()" title="Genera una proposicin al azar con su significado"
+                class="btn-pixel btn-rosa"> Generar</button>
       </div>
 
       <div class="flex flex-wrap items-center gap-2 mt-3">
@@ -69,7 +69,7 @@
       </div>
 
       <p class="text-xs text-slate-400 mt-3">
-        <strong>⚡ Generar</strong> crea una proposición aleatoria. <strong>Generar todas</strong> crea varias de golpe respetando tema, símbolos libres y el límite del administrador.
+        <strong> Generar</strong> crea una proposicin aleatoria. <strong>Generar todas</strong> crea varias de golpe respetando tema, smbolos libres y el lmite del administrador.
       </p>
       <p id="estado-atomo" class="text-sm text-amber-700 mt-2 hidden"></p>
 
@@ -85,28 +85,28 @@
         </div>
         <p class="text-xs text-slate-400 mt-2">
           Detecta los signos (<strong>y</strong>, <strong>o</strong>, <strong>no</strong>,
-          <strong>si…entonces</strong>, <strong>si y solo si</strong>), agrupa las
-          proposiciones del mismo tema y les asigna símbolos libres.
+          <strong>sientonces</strong>, <strong>si y solo si</strong>), agrupa las
+          proposiciones del mismo tema y les asigna smbolos libres.
         </p>
       </div>
     </section>
 
     <section class="caja p-6 mb-6">
       <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
-        <h2 class="pixel-titulo text-slate-700">2 · Conectivos</h2>
+        <h2 class="pixel-titulo text-slate-700">2  Conectivos</h2>
         <div class="flex items-center gap-2 text-sm">
-          <span class="text-slate-500">Selección:</span>
+          <span class="text-slate-500">Seleccin:</span>
           <span id="chipA" class="chip chip-a">A: ninguna</span>
           <span id="chipB" class="chip chip-b">B: ninguna</span>
         </div>
       </div>
 
       <div class="flex items-center gap-2 mb-4">
-        <button onclick="negar()" class="btn-conectivo" title="Negación: no A"><span class="texto-fbf">¬</span><span class="text-[10px] normal-case">no</span></button>
-        <button onclick="combinar('∧')" class="btn-conectivo" title="Conjunción: A y B"><span class="texto-fbf">∧</span><span class="text-[10px] normal-case">y</span></button>
-        <button onclick="combinar('∨')" class="btn-conectivo" title="Disyunción: A o B"><span class="texto-fbf">∨</span><span class="text-[10px] normal-case">o</span></button>
-        <button onclick="combinar('→')" class="btn-conectivo" title="Condicional: si A entonces B"><span class="texto-fbf">→</span><span class="text-[10px] normal-case">si…entonces</span></button>
-        <button onclick="combinar('↔')" class="btn-conectivo" title="Bicondicional: A si y solo si B"><span class="texto-fbf">↔</span><span class="text-[10px] normal-case">sii</span></button>
+        <button onclick="negar()" class="btn-conectivo" title="Negacin: no A"><span class="texto-fbf"></span><span class="text-[10px] normal-case">no</span></button>
+        <button onclick="combinar('')" class="btn-conectivo" title="Conjuncin: A y B"><span class="texto-fbf"></span><span class="text-[10px] normal-case">y</span></button>
+        <button onclick="combinar('')" class="btn-conectivo" title="Disyuncin: A o B"><span class="texto-fbf"></span><span class="text-[10px] normal-case">o</span></button>
+        <button onclick="combinar('')" class="btn-conectivo" title="Condicional: si A entonces B"><span class="texto-fbf"></span><span class="text-[10px] normal-case">sientonces</span></button>
+        <button onclick="combinar('')" class="btn-conectivo" title="Bicondicional: A si y solo si B"><span class="texto-fbf"></span><span class="text-[10px] normal-case">sii</span></button>
         <p id="estado-conector" class="text-sm text-slate-500 ml-2 flex-1"></p>
       </div>
 
@@ -121,12 +121,12 @@
 
     <section class="caja p-6 mb-6">
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <h2 class="pixel-titulo text-slate-700">3 · Tarjetas de construcción</h2>
+        <h2 class="pixel-titulo text-slate-700">3  Tarjetas de construccin</h2>
         <div id="multi-toggle"></div>
       </div>
       <div id="panel-multi"></div>
       <div id="panel-resultado" class="hidden mb-5 border-2 border-indigo-300 bg-indigo-50 p-5 text-center">
-        <div class="text-xs text-indigo-400 mb-2">Última FBF construida</div>
+        <div class="text-xs text-indigo-400 mb-2">ltima FBF construida</div>
         <div id="res-formula" class="texto-fbf-grande text-slate-900"></div>
         <div id="res-lectura" class="text-sm text-slate-600 mt-1 italic"></div>
       </div>
@@ -137,14 +137,14 @@
   </main>
 
   <footer class="text-center text-xs text-slate-400 py-4 relative z-10">
-    Fórmulas Bien Formadas · Tablas de verdad · Machine Learning
+    Frmulas Bien Formadas  Tablas de verdad  Machine Learning
   </footer>
 
-  <!-- Modal Límite -->
+  <!-- Modal Lmite -->
   <div id="modal-limite" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center" aria-hidden="true">
     <div class="caja p-6 max-w-sm w-[90%] text-center">
-      <h3 class="pixel-titulo text-slate-800 mb-2">Límite alcanzado</h3>
-      <p id="modal-limite-msg" class="text-sm text-slate-600 mb-4">Límite del administrador alcanzado.</p>
+      <h3 class="pixel-titulo text-slate-800 mb-2">Lmite alcanzado</h3>
+      <p id="modal-limite-msg" class="text-sm text-slate-600 mb-4">Lmite del administrador alcanzado.</p>
       <button onclick="App.cerrarModal('modal-limite')" class="btn-pixel btn-azul">Aceptar</button>
     </div>
   </div>
@@ -154,11 +154,11 @@
     <div class="caja p-6 max-w-4xl w-[95%] max-h-[90vh] flex flex-col">
       <div class="flex items-center justify-between mb-3">
         <h3 class="pixel-titulo text-slate-800">Historial de proposiciones</h3>
-        <button onclick="App.cerrarModal('modal-historial')" class="text-slate-500 hover:text-red-500">✕</button>
+        <button onclick="App.cerrarModal('modal-historial')" class="text-slate-500 hover:text-red-500"></button>
       </div>
       <div id="modal-historial-contenido" class="overflow-auto flex-1 text-xs"></div>
       <div class="flex justify-end gap-2 mt-3">
-        <button onclick="restaurarUltimo()" class="btn-pixel btn-verde">Restaurar último</button>
+        <button onclick="restaurarUltimo()" class="btn-pixel btn-verde">Restaurar ltimo</button>
         <button onclick="App.cerrarModal('modal-historial')" class="btn-pixel btn-gris">Cerrar</button>
       </div>
     </div>
@@ -225,16 +225,16 @@
       const h = herramientas();
       const simbolo = document.getElementById('nuevo-simbolo').value.trim();
       const descripcion = document.getElementById('nuevo-descripcion').value.trim();
-      if (!simbolo) { h.mostrar('Escribe un símbolo (p,q…).', 'amber'); return; }
-      if (!/^[a-z][a-z0-9]*$/i.test(simbolo)) { h.mostrar('Símbolo inválido.', 'red'); return; }
+      if (!simbolo) { h.mostrar('Escribe un smbolo (p,q).', 'amber'); return; }
+      if (!/^[a-z][a-z0-9]*$/i.test(simbolo)) { h.mostrar('Smbolo invlido.', 'red'); return; }
       const s = simbolo.toLowerCase();
       const usados = new Set(h.simbolosEnUso().map(x=>x.toLowerCase()));
-      if (usados.has(s)) { h.mostrar('Símbolo ya en uso.', 'red'); return; }
+      if (usados.has(s)) { h.mostrar('Smbolo ya en uso.', 'red'); return; }
       const descripciones = descripcion ? { [s]: descripcion } : {};
       const t = { id: ++idTarjeta, formula: s, lectura: descripcion||s, descripciones };
       tarjetas.unshift(t);
       document.getElementById('nuevo-simbolo').value=''; document.getElementById('nuevo-descripcion').value='';
-      h.mostrar('Proposición añadida.', 'green');
+      h.mostrar('Proposicin aadida.', 'green');
       renderTodo();
       guardarEnHistorial({tipo:'manual', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones});
     }
@@ -244,7 +244,7 @@
       const res = Generador.proposicionCoherente({ simbolosUsados: h.simbolosEnUso(), textosUsados: h.textosEnUso() });
       const t = { id: ++idTarjeta, formula: res.formula, lectura: res.lectura, descripciones: res.descripciones, tema: res.etiquetaTema };
       tarjetas.unshift(t);
-      h.mostrar('Proposición generada.', 'green');
+      h.mostrar('Proposicin generada.', 'green');
       renderTodo();
       guardarEnHistorial({tipo:'aleatoria', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones, tema:t.tema});
     }
@@ -255,7 +255,7 @@
       if (n<1) n=1; if (n>50) n=50;
       const ajustes = await Storage.ajustesGetTodos({maxGenerar:0});
       if (ajustes.maxGenerar>0 && n>ajustes.maxGenerar) {
-        document.getElementById('modal-limite-msg').textContent = 'Límite del administrador alcanzado. Máximo permitido: ' + ajustes.maxGenerar;
+        document.getElementById('modal-limite-msg').textContent = 'Lmite del administrador alcanzado. Mximo permitido: ' + ajustes.maxGenerar;
         App.abrirModal('modal-limite');
         return;
       }
@@ -278,7 +278,7 @@
 
     async function abrirHistorial() {
       const lista = await Storage.historialListar(80);
-      let html = '<table class="tabla-verdad w-full"><thead><tr><th>Fecha</th><th>Tipo</th><th>Fórmula</th><th>Lectura</th></tr></thead><tbody>';
+      let html = '<table class="tabla-verdad w-full"><thead><tr><th>Fecha</th><th>Tipo</th><th>Frmula</th><th>Lectura</th></tr></thead><tbody>';
       lista.forEach(h=>{
         const f = new Date(h.fecha).toLocaleString();
         html += '<tr><td>'+esc(f)+'</td><td>'+esc(h.tipo)+'</td><td class="texto-fbf">'+esc(h.formula)+'</td><td>'+esc(h.lectura)+'</td></tr>';
@@ -290,33 +290,33 @@
 
     async function restaurarUltimo() {
       const lista = await Storage.historialListar(1);
-      if (!lista.length) return App.toast('Historial vacío', 'error');
+      if (!lista.length) return App.toast('Historial vaco', 'error');
       const h = herramientas();
       const ult = lista[0];
       const res = Generador.proposicionCoherente({ simbolosUsados: h.simbolosEnUso(), textosUsados: h.textosEnUso() });
-      const t = { id: ++idTarjeta, formula: ult.formula && ult.formula.match(/^[a-z¬∧∨→↔\(\)\s]+$/i)? ult.formula : res.formula, lectura: ult.lectura||res.lectura, descripciones: ult.descripciones||res.descripciones, tema: ult.tema||null };
+      const t = { id: ++idTarjeta, formula: ult.formula && ult.formula.match(/^[a-z\(\)\s]+$/i)? ult.formula : res.formula, lectura: ult.lectura||res.lectura, descripciones: ult.descripciones||res.descripciones, tema: ult.tema||null };
       tarjetas.unshift(t);
       renderTodo();
-      App.toast('Último elemento restaurado', 'ok');
+      App.toast('ltimo elemento restaurado', 'ok');
     }
 
     function renderTodo(){ renderChips(); renderResultado(); renderLista(); renderSugerencia(); }
     function renderChips(){
       const a=obtenerTarjeta(selA), b=obtenerTarjeta(selB);
-      document.getElementById('chipA').innerHTML=a?('A: <span class="texto-fbf">'+esc(a.formula)+'</span> <button onclick="quitarA()" class="ml-1 text-red-500">✕</button>'):'A: ninguna';
-      document.getElementById('chipB').innerHTML=b?('B: <span class="texto-fbf">'+esc(b.formula)+'</span> <button onclick="quitarB()" class="ml-1 text-red-500">✕</button>'):'B: ninguna';
+      document.getElementById('chipA').innerHTML=a?('A: <span class="texto-fbf">'+esc(a.formula)+'</span> <button onclick="quitarA()" class="ml-1 text-red-500"></button>'):'A: ninguna';
+      document.getElementById('chipB').innerHTML=b?('B: <span class="texto-fbf">'+esc(b.formula)+'</span> <button onclick="quitarB()" class="ml-1 text-red-500"></button>'):'B: ninguna';
     }
     function renderResultado(){
       const p=document.getElementById('panel-resultado');
       if(!tarjetas.length){ p.classList.add('hidden'); return; }
       p.classList.remove('hidden');
       document.getElementById('res-formula').innerHTML=esc(tarjetas[0].formula);
-      document.getElementById('res-lectura').textContent='“'+tarjetas[0].lectura+'”';
+      document.getElementById('res-lectura').textContent=''+tarjetas[0].lectura+'';
     }
     function renderLista(){
       const c=document.getElementById('lista-tarjetas');
       if(!tarjetas.length){ 
-        c.innerHTML='<p class="text-sm text-slate-400">Aún no hay tarjetas.</p>';
+        c.innerHTML='<p class="text-sm text-slate-400">An no hay tarjetas.</p>';
         if(window.Sortable){ try{ Sortable.get(c)||Sortable.create(c,{animation:150,handle:'.drag-handle'}); }catch(e){} }
         return; 
       }
@@ -324,7 +324,7 @@
         const selM = BuilderMulti.enModoMulti() && BuilderMulti.estaSeleccionado(t.id);
         const chk = BuilderMulti.enModoMulti() ? `<input type="checkbox" class="w-4 h-4" ${selM?'checked':''} data-chk="${t.id}">` : '';
         return `<div data-id="${t.id}" class="flex items-center gap-3 border-2 border-black p-3 bg-slate-50 ${selM?'ring-2 ring-emerald-400':''}">
-          <span class="drag-handle cursor-grab text-slate-400">☰</span>
+          <span class="drag-handle cursor-grab text-slate-400"></span>
           ${chk}
           <button onclick="asignarA(${t.id})" class="badge-radio badge-a ${t.id===selA?'activo':''}">A</button>
           <button onclick="asignarB(${t.id})" class="badge-radio badge-b ${t.id===selB?'activo':''}">B</button>
@@ -333,7 +333,7 @@
             <div class="text-xs text-slate-500 truncate">${esc(t.lectura)}</div>
             ${t.tema?'<div class="text-[10px] text-indigo-400 mt-0.5 truncate">tema: '+esc(t.tema)+'</div>':''}
           </div>
-          <button onclick="borrar(${t.id})" class="ml-auto p-1 text-slate-400 hover:text-red-500">✕</button>
+          <button onclick="borrar(${t.id})" class="ml-auto p-1 text-slate-400 hover:text-red-500"></button>
         </div>`;
       }).join('');
       if(window.Sortable){ try{ Sortable.get(c)||Sortable.create(c,{animation:150,handle:'.drag-handle', onEnd: function(){ reordenarTarjetas(); }}); }catch(e){} }
@@ -345,7 +345,7 @@
       const o=tarjetaANegar(); if(!o)return mostrarEstado('Sin tarjeta','red');
       const ast=new LogicaParser.NegNode(LogicaParser.parsear(o.formula));
       const t={id:++idTarjeta, formula:LogicaParser.aCadena(ast), lectura:LogicaParser.renderEs(ast,o.descripciones), descripciones:o.descripciones};
-      tarjetas.unshift(t); selA=null; mostrarEstado('Negación aplicada','green'); renderTodo();
+      tarjetas.unshift(t); selA=null; mostrarEstado('Negacin aplicada','green'); renderTodo();
       guardarEnHistorial({tipo:'negacion', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones});
     }
     function combinar(op){

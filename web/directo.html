@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/estilos.css">
+  <link rel="manifest" href="manifest.json">
   <script src="assets/js/auth.js"></script>
   <script>Auth.protegerPagina();</script>
 </head>
@@ -59,11 +60,16 @@
         <button onclick="generarAleatoria()" title="Genera una proposición al azar con su significado"
                 class="btn-pixel btn-rosa">⚡ Generar</button>
       </div>
+
+      <div class="flex flex-wrap items-center gap-2 mt-3">
+        <input id="cant-generar" type="number" min="1" max="50" value="3"
+               class="px-2 py-1 border border-slate-300 w-24 text-sm">
+        <button onclick="generarTodas()" class="btn-pixel btn-rosa">Generar todas</button>
+        <button onclick="abrirHistorial()" class="btn-pixel btn-gris">Historial</button>
+      </div>
+
       <p class="text-xs text-slate-400 mt-3">
-        <strong>⚡ Generar</strong> crea una proposición aleatoria (simple o molecular)
-        con significado automático y la añade como tarjeta. Los símbolos y los
-        significados nunca se repiten: siempre salen del mismo tema y en orden
-        (<span class="texto-fbf">p, q, r…</span>).
+        <strong>⚡ Generar</strong> crea una proposición aleatoria. <strong>Generar todas</strong> crea varias de golpe respetando tema, símbolos libres y el límite del administrador.
       </p>
       <p id="estado-atomo" class="text-sm text-amber-700 mt-2 hidden"></p>
 
@@ -80,8 +86,7 @@
         <p class="text-xs text-slate-400 mt-2">
           Detecta los signos (<strong>y</strong>, <strong>o</strong>, <strong>no</strong>,
           <strong>si…entonces</strong>, <strong>si y solo si</strong>), agrupa las
-          proposiciones del mismo tema y les asigna símbolos libres. Pulsa
-          <kbd>Enter</kbd> para traducir.
+          proposiciones del mismo tema y les asigna símbolos libres.
         </p>
       </div>
     </section>
@@ -97,34 +102,13 @@
       </div>
 
       <div class="flex items-center gap-2 mb-4">
-        <button onclick="negar()" class="btn-conectivo" title="Negación: no A">
-          <span class="texto-fbf">¬</span>
-          <span class="text-[10px] normal-case">no</span>
-        </button>
-        <button onclick="combinar('∧')" class="btn-conectivo" title="Conjunción: A y B">
-          <span class="texto-fbf">∧</span>
-          <span class="text-[10px] normal-case">y</span>
-        </button>
-        <button onclick="combinar('∨')" class="btn-conectivo" title="Disyunción: A o B">
-          <span class="texto-fbf">∨</span>
-          <span class="text-[10px] normal-case">o</span>
-        </button>
-        <button onclick="combinar('→')" class="btn-conectivo" title="Condicional: si A entonces B">
-          <span class="texto-fbf">→</span>
-          <span class="text-[10px] normal-case">si…entonces</span>
-        </button>
-        <button onclick="combinar('↔')" class="btn-conectivo" title="Bicondicional: A si y solo si B">
-          <span class="texto-fbf">↔</span>
-          <span class="text-[10px] normal-case">sii</span>
-        </button>
+        <button onclick="negar()" class="btn-conectivo" title="Negación: no A"><span class="texto-fbf">¬</span><span class="text-[10px] normal-case">no</span></button>
+        <button onclick="combinar('∧')" class="btn-conectivo" title="Conjunción: A y B"><span class="texto-fbf">∧</span><span class="text-[10px] normal-case">y</span></button>
+        <button onclick="combinar('∨')" class="btn-conectivo" title="Disyunción: A o B"><span class="texto-fbf">∨</span><span class="text-[10px] normal-case">o</span></button>
+        <button onclick="combinar('→')" class="btn-conectivo" title="Condicional: si A entonces B"><span class="texto-fbf">→</span><span class="text-[10px] normal-case">si…entonces</span></button>
+        <button onclick="combinar('↔')" class="btn-conectivo" title="Bicondicional: A si y solo si B"><span class="texto-fbf">↔</span><span class="text-[10px] normal-case">sii</span></button>
         <p id="estado-conector" class="text-sm text-slate-500 ml-2 flex-1"></p>
       </div>
-
-      <p class="text-xs text-slate-400 mb-3">
-        Selecciona la tarjeta <strong>A</strong> y la tarjeta <strong>B</strong> con
-        los botones de cada tarjeta. <strong>¬</strong> se aplica sobre A (o la última
-        tarjeta si no hay selección). Los conectivos binarios combinan A y B.
-      </p>
 
       <div id="panel-sugerencia" class="hidden mt-2 border-2 border-dashed border-emerald-300 bg-emerald-50 p-3">
         <div class="flex flex-wrap items-center gap-2 mb-2">
@@ -132,43 +116,68 @@
           <span id="sugerencia-nota" class="text-[11px] text-emerald-700"></span>
         </div>
         <div id="sugerencia-lista" class="flex flex-wrap items-center gap-2"></div>
-        <p class="text-[11px] text-emerald-600 mt-2">
-          El k-NN (5 vecinos) puntúa cada conectivo según lo que aprendió: la
-          puntuación es la probabilidad de que el resultado sea una contingencia
-          útil, y penaliza resultados que solo usan una tarjeta o que son
-          tautologías triviales. Pulsa el que prefieras y se aplica igual que el botón.
-        </p>
       </div>
     </section>
 
     <section class="caja p-6 mb-6">
-      <h2 class="pixel-titulo text-slate-700 mb-3">3 · Tarjetas de construcción</h2>
-
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <h2 class="pixel-titulo text-slate-700">3 · Tarjetas de construcción</h2>
+        <div id="multi-toggle"></div>
+      </div>
+      <div id="panel-multi"></div>
       <div id="panel-resultado" class="hidden mb-5 border-2 border-indigo-300 bg-indigo-50 p-5 text-center">
         <div class="text-xs text-indigo-400 mb-2">Última FBF construida</div>
         <div id="res-formula" class="texto-fbf-grande text-slate-900"></div>
         <div id="res-lectura" class="text-sm text-slate-600 mt-1 italic"></div>
       </div>
-
-      <div id="lista-tarjetas" class="grid gap-3"></div>
+      <div id="lista-tarjetas" class="grid gap-3 sortable-list"></div>
     </section>
 
+    <div id="panel-admin" class="hidden"></div>
   </main>
 
   <footer class="text-center text-xs text-slate-400 py-4 relative z-10">
     Fórmulas Bien Formadas · Tablas de verdad · Machine Learning
   </footer>
 
+  <!-- Modal Límite -->
+  <div id="modal-limite" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center" aria-hidden="true">
+    <div class="caja p-6 max-w-sm w-[90%] text-center">
+      <h3 class="pixel-titulo text-slate-800 mb-2">Límite alcanzado</h3>
+      <p id="modal-limite-msg" class="text-sm text-slate-600 mb-4">Límite del administrador alcanzado.</p>
+      <button onclick="App.cerrarModal('modal-limite')" class="btn-pixel btn-azul">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Modal Historial -->
+  <div id="modal-historial" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center" aria-hidden="true">
+    <div class="caja p-6 max-w-4xl w-[95%] max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="pixel-titulo text-slate-800">Historial de proposiciones</h3>
+        <button onclick="App.cerrarModal('modal-historial')" class="text-slate-500 hover:text-red-500">✕</button>
+      </div>
+      <div id="modal-historial-contenido" class="overflow-auto flex-1 text-xs"></div>
+      <div class="flex justify-end gap-2 mt-3">
+        <button onclick="restaurarUltimo()" class="btn-pixel btn-verde">Restaurar último</button>
+        <button onclick="App.cerrarModal('modal-historial')" class="btn-pixel btn-gris">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
   <script src="assets/js/parser.js"></script>
   <script src="assets/js/semantica.js"></script>
   <script src="assets/js/generador.js"></script>
   <script src="assets/js/nlp.js"></script>
   <script src="assets/js/ml.js"></script>
-  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/storage.js"></script>
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/ui-admin.js"></script>
+  <script src="assets/js/sortable.min.js"></script>
+  <script src="assets/js/builder-multi.js"></script>
   <script src="assets/js/asistente.js"></script>
   <script>
-
 
     let idTarjeta = 0;
     let tarjetas = [];
@@ -203,273 +212,166 @@
       };
     }
 
-    function obtenerTarjeta(id) {
-      return tarjetas.find(t => t.id === id) || null;
-    }
+    function obtenerTarjeta(id) { return tarjetas.find(t => t.id === id) || null; }
+    function tarjetaANegar() { return obtenerTarjeta(selA) || tarjetas[0] || null; }
 
-    function tarjetaANegar() {
-      return obtenerTarjeta(selA) || tarjetas[0] || null;
-    }
-
-
-    function asignarA(id) {
-      selA = id;
-      if (selB === id) { selB = null; }
-      renderTodo();
-    }
-    function asignarB(id) {
-      selB = id;
-      if (selA === id) { selA = null; }
-      renderTodo();
-    }
+    function asignarA(id) { selA = id; if (selB === id) selB = null; renderTodo(); }
+    function asignarB(id) { selB = id; if (selA === id) selA = null; renderTodo(); }
     function quitarA() { selA = null; renderTodo(); }
     function quitarB() { selB = null; renderTodo(); }
-
-    function borrar(id) {
-      tarjetas = tarjetas.filter(t => t.id !== id);
-      if (selA === id) { selA = null; }
-      if (selB === id) { selB = null; }
-      renderTodo();
-    }
-
+    function borrar(id) { tarjetas = tarjetas.filter(t => t.id !== id); if (selA===id) selA=null; if (selB===id) selB=null; renderTodo(); }
 
     function agregarAtomo() {
       const h = herramientas();
       const simbolo = document.getElementById('nuevo-simbolo').value.trim();
       const descripcion = document.getElementById('nuevo-descripcion').value.trim();
-      if (!simbolo) { h.mostrar('Escribe un símbolo para la proposición (p, q…).', 'amber'); return; }
-
-      if (!/^[a-z][a-z0-9]*$/i.test(simbolo) || simbolo.length > 12) {
-        h.mostrar('El símbolo debe ser una letra (p, q, r…) opcionalmente seguida de dígitos (p1, q2) y sin espacios.', 'red');
-        return;
-      }
+      if (!simbolo) { h.mostrar('Escribe un símbolo (p,q…).', 'amber'); return; }
+      if (!/^[a-z][a-z0-9]*$/i.test(simbolo)) { h.mostrar('Símbolo inválido.', 'red'); return; }
       const s = simbolo.toLowerCase();
-      const usados = new Set(h.simbolosEnUso().map(x => x.toLowerCase()));
-      if (usados.has(s)) {
-        h.mostrar(`El símbolo '${s}' ya está en uso. Bórralo de la lista para reutilizarlo.`, 'red');
-        return;
-      }
-
-      const descripciones = (descripcion ? { [s]: descripcion } : {});
-      tarjetas.unshift({
-        id: ++idTarjeta,
-        formula: s,
-        lectura: (descripcion || s),
-        descripciones: descripciones
-      });
-      document.getElementById('nuevo-simbolo').value = '';
-      document.getElementById('nuevo-descripcion').value = '';
-      h.mostrar(`Proposición ${s} añadida.`, 'green');
+      const usados = new Set(h.simbolosEnUso().map(x=>x.toLowerCase()));
+      if (usados.has(s)) { h.mostrar('Símbolo ya en uso.', 'red'); return; }
+      const descripciones = descripcion ? { [s]: descripcion } : {};
+      const t = { id: ++idTarjeta, formula: s, lectura: descripcion||s, descripciones };
+      tarjetas.unshift(t);
+      document.getElementById('nuevo-simbolo').value=''; document.getElementById('nuevo-descripcion').value='';
+      h.mostrar('Proposición añadida.', 'green');
       renderTodo();
+      guardarEnHistorial({tipo:'manual', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones});
     }
 
     function generarAleatoria() {
       const h = herramientas();
-      const res = Generador.proposicionCoherente({
-        simbolosUsados: h.simbolosEnUso(),
-        textosUsados: h.textosEnUso()
-      });
-
-      tarjetas.unshift({
-        id: ++idTarjeta,
-        formula: res.formula,
-        lectura: res.lectura,
-        descripciones: res.descripciones,
-        tema: res.etiquetaTema
-      });
-      const aviso = res.recicla ? ' · ya no quedan significados libres, se reutilizan' : '';
-      h.mostrar(`Proposición generada [${res.etiquetaTema}]: ${res.formula} → “${res.lectura}”${aviso}`, 'green');
+      const res = Generador.proposicionCoherente({ simbolosUsados: h.simbolosEnUso(), textosUsados: h.textosEnUso() });
+      const t = { id: ++idTarjeta, formula: res.formula, lectura: res.lectura, descripciones: res.descripciones, tema: res.etiquetaTema };
+      tarjetas.unshift(t);
+      h.mostrar('Proposición generada.', 'green');
       renderTodo();
+      guardarEnHistorial({tipo:'aleatoria', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones, tema:t.tema});
     }
 
-    let cacheSugerencia = null;
-
-    function renderSugerencia() {
-      const panel = document.getElementById('panel-sugerencia');
-      const a = obtenerTarjeta(selA);
-      const b = obtenerTarjeta(selB);
-      if (!a || !b || a.id === b.id) {
-        panel.classList.add('hidden');
-        cacheSugerencia = null;
-        return;
-      }
-
-      const clave = a.formula + ' | ' + b.formula;
-      if (!cacheSugerencia || cacheSugerencia.clave !== clave) {
-        cacheSugerencia = { clave: clave, items: ML.sugerirConectivo(a.formula, b.formula) };
-      }
-      const items = cacheSugerencia.items;
-      if (!items.length) { panel.classList.add('hidden'); return; }
-
-      panel.classList.remove('hidden');
-      document.getElementById('sugerencia-lista').innerHTML = items.map((s, i) => `
-        <button type="button" onclick="combinar('${s.op}')" class="btn-insertar"
-                title="${esc(`${s.etiqueta}: ${s.motivo} · ${s.clase}`)}">
-          <span class="texto-fbf">${s.op}</span>
-          ${i === 0 ? '<span class="ml-1 text-[10px] text-emerald-700 uppercase">mejor</span>' : ''}
-        </button>`).join('');
-
-      const mejor = items[0];
-      document.getElementById('sugerencia-nota').textContent =
-        `con A y B · el modelo da ${mejor.probabilidad * 100}% de contingencia a ` +
-        `${mejor.formula} (${mejor.motivo})`;
-    }
-
-    function agregarTraduccion(fbf, desc, tema) {
-      const ast = LogicaParser.parsear(fbf);
-      const presentes = {};
-      LogicaParser.atomos(ast).forEach(a => { presentes[a] = true; });
-      const limpios = {};
-      Object.keys(desc).forEach(k => { if (presentes[k]) limpios[k] = desc[k]; });
-
-      tarjetas.unshift({
-        id: ++idTarjeta,
-        formula: fbf,
-        lectura: LogicaParser.renderEs(ast, limpios),
-        descripciones: limpios,
-        tema: tema || null
-      });
-    }
-
-    function traducirFrase() {
+    async function generarTodas() {
       const h = herramientas();
-      const campo = document.getElementById('frase-nlp');
-      const frase = campo.value.trim();
-      if (!frase) { h.mostrar('Escribe una frase para traducir.', 'amber'); return; }
-
-      const res = Generador.significadosDesdeFrase(frase, { simbolosUsados: h.simbolosEnUso() });
-      if (!Object.keys(res.descripciones).length) {
-        h.mostrar('No encontré proposiciones en la frase.', 'red');
+      let n = parseInt(document.getElementById('cant-generar').value)||3;
+      if (n<1) n=1; if (n>50) n=50;
+      const ajustes = await Storage.ajustesGetTodos({maxGenerar:0});
+      if (ajustes.maxGenerar>0 && n>ajustes.maxGenerar) {
+        document.getElementById('modal-limite-msg').textContent = 'Límite del administrador alcanzado. Máximo permitido: ' + ajustes.maxGenerar;
+        App.abrirModal('modal-limite');
         return;
       }
-
-      let fbf;
-      try { fbf = Nlp.oracionAFbf(frase, res.descripciones); }
-      catch (e) { h.mostrar('No pude traducir la frase: ' + e.message, 'red'); return; }
-
-      const tema = res.etiquetasTema.length ? res.etiquetasTema.join(' + ') : 'tus propias palabras';
-      try { agregarTraduccion(fbf, res.descripciones, tema); }
-      catch (e) { h.mostrar('No pude añadir la tarjeta: ' + e.message, 'red'); return; }
-
-      campo.value = '';
-      const propios = res.propios.length
-        ? ` · ${res.propios.length} significado(s) los escribiste tú`
-        : '';
-      h.mostrar(`Traducido [${tema}]: ${fbf} → “${LogicaParser.renderEs(LogicaParser.parsear(fbf), res.descripciones)}”${propios}`, 'green');
+      const batchId = 'b_'+Date.now();
+      const agregadas = [];
+      for (let i=0;i<n;i++) {
+        const res = Generador.proposicionCoherente({ simbolosUsados: h.simbolosEnUso(), textosUsados: h.textosEnUso() });
+        const t = { id: ++idTarjeta, formula: res.formula, lectura: res.lectura, descripciones: res.descripciones, tema: res.etiquetaTema };
+        tarjetas.unshift(t);
+        agregadas.push(t);
+      }
+      h.mostrar('Generadas '+n+' proposiciones.', 'green');
       renderTodo();
+      guardarEnHistorial({tipo:'batch', formula:agregadas[0].formula, lectura:'Lote de '+n+' proposiciones', descripciones:{}, batchId, count:n});
     }
 
-    function negar() {
-      const origen = tarjetaANegar();
-      if (!origen) { mostrarEstado('Aún no hay ninguna tarjeta.', 'red'); return; }
-      let ast;
-      try {
-        ast = new LogicaParser.NegNode(LogicaParser.parsear(origen.formula));
-      } catch (e) { mostrarEstado(e.message, 'red'); return; }
+    async function guardarEnHistorial(item) {
+      try { await Storage.historialAgregar(item); } catch(e){}
+    }
 
-      tarjetas.unshift({
-        id: ++idTarjeta,
-        formula: LogicaParser.aCadena(ast),
-        lectura: LogicaParser.renderEs(ast, origen.descripciones),
-        descripciones: origen.descripciones
+    async function abrirHistorial() {
+      const lista = await Storage.historialListar(80);
+      let html = '<table class="tabla-verdad w-full"><thead><tr><th>Fecha</th><th>Tipo</th><th>Fórmula</th><th>Lectura</th></tr></thead><tbody>';
+      lista.forEach(h=>{
+        const f = new Date(h.fecha).toLocaleString();
+        html += '<tr><td>'+esc(f)+'</td><td>'+esc(h.tipo)+'</td><td class="texto-fbf">'+esc(h.formula)+'</td><td>'+esc(h.lectura)+'</td></tr>';
       });
-      selA = null;
-      mostrarEstado('Negación aplicada (¬).', 'green');
+      html += '</tbody></table>';
+      document.getElementById('modal-historial-contenido').innerHTML = html;
+      App.abrirModal('modal-historial');
+    }
+
+    async function restaurarUltimo() {
+      const lista = await Storage.historialListar(1);
+      if (!lista.length) return App.toast('Historial vacío', 'error');
+      const h = herramientas();
+      const ult = lista[0];
+      const res = Generador.proposicionCoherente({ simbolosUsados: h.simbolosEnUso(), textosUsados: h.textosEnUso() });
+      const t = { id: ++idTarjeta, formula: ult.formula && ult.formula.match(/^[a-z¬∧∨→↔\(\)\s]+$/i)? ult.formula : res.formula, lectura: ult.lectura||res.lectura, descripciones: ult.descripciones||res.descripciones, tema: ult.tema||null };
+      tarjetas.unshift(t);
       renderTodo();
+      App.toast('Último elemento restaurado', 'ok');
     }
 
-    function combinar(op) {
-      const a = obtenerTarjeta(selA);
-      const b = obtenerTarjeta(selB);
-      if (!a || !b || a.id === b.id) {
-        mostrarEstado('Selecciona dos tarjetas distintas (A y B) para combinar.', 'red');
-        return;
+    function renderTodo(){ renderChips(); renderResultado(); renderLista(); renderSugerencia(); }
+    function renderChips(){
+      const a=obtenerTarjeta(selA), b=obtenerTarjeta(selB);
+      document.getElementById('chipA').innerHTML=a?('A: <span class="texto-fbf">'+esc(a.formula)+'</span> <button onclick="quitarA()" class="ml-1 text-red-500">✕</button>'):'A: ninguna';
+      document.getElementById('chipB').innerHTML=b?('B: <span class="texto-fbf">'+esc(b.formula)+'</span> <button onclick="quitarB()" class="ml-1 text-red-500">✕</button>'):'B: ninguna';
+    }
+    function renderResultado(){
+      const p=document.getElementById('panel-resultado');
+      if(!tarjetas.length){ p.classList.add('hidden'); return; }
+      p.classList.remove('hidden');
+      document.getElementById('res-formula').innerHTML=esc(tarjetas[0].formula);
+      document.getElementById('res-lectura').textContent='“'+tarjetas[0].lectura+'”';
+    }
+    function renderLista(){
+      const c=document.getElementById('lista-tarjetas');
+      if(!tarjetas.length){ 
+        c.innerHTML='<p class="text-sm text-slate-400">Aún no hay tarjetas.</p>';
+        if(window.Sortable){ try{ Sortable.get(c)||Sortable.create(c,{animation:150,handle:'.drag-handle'}); }catch(e){} }
+        return; 
       }
-      let izq, der;
-      try {
-        izq = LogicaParser.parsear(a.formula);
-        der = LogicaParser.parsear(b.formula);
-      } catch (e) { mostrarEstado(e.message, 'red'); return; }
-
-      const nodo = new LogicaParser.BinNode(op, izq, der);
-      const desc = herramientas().unirDescripciones([a, b]);
-
-      tarjetas.unshift({
-        id: ++idTarjeta,
-        formula: LogicaParser.aCadena(nodo),
-        lectura: LogicaParser.renderEs(nodo, desc),
-        descripciones: desc
-      });
-      selA = selB = null;
-      mostrarEstado(`Conectivo ${op} aplicado.`, 'green');
-      renderTodo();
-    }
-
-
-    function renderTodo() {
-      renderChips();
-      renderResultado();
-      renderLista();
-      renderSugerencia();
-    }
-
-    function renderChips() {
-      const a = obtenerTarjeta(selA);
-      const b = obtenerTarjeta(selB);
-      document.getElementById('chipA').innerHTML = a
-        ? `A: <span class="texto-fbf">${esc(a.formula)}</span> <button onclick="quitarA()" class="ml-1 text-red-500 font-bold">✕</button>`
-        : 'A: ninguna';
-      document.getElementById('chipB').innerHTML = b
-        ? `B: <span class="texto-fbf">${esc(b.formula)}</span> <button onclick="quitarB()" class="ml-1 text-red-500 font-bold">✕</button>`
-        : 'B: ninguna';
-    }
-
-    function renderResultado() {
-      const panel = document.getElementById('panel-resultado');
-      if (!tarjetas.length) {
-        panel.classList.add('hidden');
-        return;
-      }
-      panel.classList.remove('hidden');
-      document.getElementById('res-formula').innerHTML = esc(tarjetas[0].formula);
-      document.getElementById('res-lectura').textContent = `“${tarjetas[0].lectura}”`;
-    }
-
-    function renderLista() {
-      const cont = document.getElementById('lista-tarjetas');
-      if (!tarjetas.length) {
-        cont.innerHTML = '<p class="text-sm text-slate-400">Aún no hay tarjetas. Añade tu primera proposición simple.</p>';
-        return;
-      }
-      cont.innerHTML = tarjetas.map(t => `
-        <div class="flex items-center gap-3 border-2 border-black p-3 bg-slate-50
-                    ${t.id === selA ? 'ring-indigo-400' : ''}
-                    ${t.id === selB ? 'ring-emerald-400' : ''}">
-          <button onclick="asignarA(${t.id})"
-                  class="badge-radio badge-a ${t.id === selA ? 'activo' : ''}" title="Usar como A">A</button>
-          <button onclick="asignarB(${t.id})"
-                  class="badge-radio badge-b ${t.id === selB ? 'activo' : ''}" title="Usar como B">B</button>
+      c.innerHTML=tarjetas.map(t=>{
+        const selM = BuilderMulti.enModoMulti() && BuilderMulti.estaSeleccionado(t.id);
+        const chk = BuilderMulti.enModoMulti() ? `<input type="checkbox" class="w-4 h-4" ${selM?'checked':''} data-chk="${t.id}">` : '';
+        return `<div data-id="${t.id}" class="flex items-center gap-3 border-2 border-black p-3 bg-slate-50 ${selM?'ring-2 ring-emerald-400':''}">
+          <span class="drag-handle cursor-grab text-slate-400">☰</span>
+          ${chk}
+          <button onclick="asignarA(${t.id})" class="badge-radio badge-a ${t.id===selA?'activo':''}">A</button>
+          <button onclick="asignarB(${t.id})" class="badge-radio badge-b ${t.id===selB?'activo':''}">B</button>
           <div class="min-w-0">
             <div class="texto-fbf truncate">${esc(t.formula)}</div>
             <div class="text-xs text-slate-500 truncate">${esc(t.lectura)}</div>
-            ${t.tema ? `<div class="text-[10px] text-indigo-400 mt-0.5 truncate">tema: ${esc(t.tema)}</div>` : ''}
+            ${t.tema?'<div class="text-[10px] text-indigo-400 mt-0.5 truncate">tema: '+esc(t.tema)+'</div>':''}
           </div>
-          <button onclick="borrar(${t.id})" class="ml-auto p-1 text-slate-400 hover:text-red-500 hover:bg-red-50" title="Eliminar">✕</button>
-        </div>`).join('');
+          <button onclick="borrar(${t.id})" class="ml-auto p-1 text-slate-400 hover:text-red-500">✕</button>
+        </div>`;
+      }).join('');
+      if(window.Sortable){ try{ Sortable.get(c)||Sortable.create(c,{animation:150,handle:'.drag-handle', onEnd: function(){ reordenarTarjetas(); }}); }catch(e){} }
+      c.querySelectorAll('[data-chk]').forEach(cb=>{
+        cb.onchange=function(){ BuilderMulti.toggle(parseInt(this.getAttribute('data-chk'))); };
+      });
     }
-
-    function mostrarEstado(msg, color) {
-      const el = document.getElementById('estado-conector');
-      const colores = { red: 'text-red-600', green: 'text-emerald-600', amber: 'text-amber-700' };
-      el.className = 'text-sm ml-2 flex-1 ' + (colores[color] || 'text-slate-500');
-      el.textContent = msg;
+    function negar(){
+      const o=tarjetaANegar(); if(!o)return mostrarEstado('Sin tarjeta','red');
+      const ast=new LogicaParser.NegNode(LogicaParser.parsear(o.formula));
+      const t={id:++idTarjeta, formula:LogicaParser.aCadena(ast), lectura:LogicaParser.renderEs(ast,o.descripciones), descripciones:o.descripciones};
+      tarjetas.unshift(t); selA=null; mostrarEstado('Negación aplicada','green'); renderTodo();
+      guardarEnHistorial({tipo:'negacion', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones});
     }
-    document.getElementById('frase-nlp').addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); traducirFrase(); }
-    });
-
+    function combinar(op){
+      const a=obtenerTarjeta(selA), b=obtenerTarjeta(selB);
+      if(!a||!b||a.id===b.id)return mostrarEstado('Selecciona A y B distintos','red');
+      const nodo=new LogicaParser.BinNode(op, LogicaParser.parsear(a.formula), LogicaParser.parsear(b.formula));
+      const desc=herramientas().unirDescripciones([a,b]);
+      const t={id:++idTarjeta, formula:LogicaParser.aCadena(nodo), lectura:LogicaParser.renderEs(nodo,desc), descripciones:desc};
+      tarjetas.unshift(t); selA=selB=null; mostrarEstado('Combinado '+op,'green'); renderTodo();
+      guardarEnHistorial({tipo:'combinacion', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones});
+    }
+    function mostrarEstado(msg,c){ const el=document.getElementById('estado-conector'); el.className='text-sm ml-2 flex-1 '+({red:'text-red-600',green:'text-emerald-600'}[c]||'text-slate-500'); el.textContent=msg; }
+    function reordenarTarjetas(){
+      const c=document.getElementById('lista-tarjetas');
+      const orden=[];
+      c.querySelectorAll('[data-id]').forEach(el=>{ orden.push(parseInt(el.getAttribute('data-id'))); });
+      const mapa={};
+      tarjetas.forEach(t=>mapa[t.id]=t);
+      tarjetas=orden.map(id=>mapa[id]).filter(Boolean);
+      renderTodo();
+    }
+    document.getElementById('frase-nlp').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();traducirFrase();}});
+    document.addEventListener('DOMContentLoaded',function(){ if(window.BuilderMulti) BuilderMulti.init(); });
     renderTodo();
-
-</script>
+  </script>
 </body>
 </html>
+
+  <script>if(navigator.serviceWorker){try{navigator.serviceWorker.register('sw.js');}catch(e){}}</script>

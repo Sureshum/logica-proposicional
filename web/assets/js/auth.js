@@ -1,254 +1,148 @@
+"use strict";
 
-(function () {
-  "use strict";
+(function (global) {
+  const STORAGE_KEY = "lp_usuario";
+  const STORAGE_ROLES = "lp_roles";
 
-  var CLAVE_USUARIOS = "logica.usuarios";
-  var CLAVE_SESION = "logica.sesion";
-  var CUENTA_POR_DEFECTO = { usuario: "admin", clave: "1234", nombre: "Administrador" };
-  var RUTA_LOGIN = "login.html";
-
-  function leerJSON(clave, porDefecto) {
+  function cargarUsuario() {
     try {
-      var crudo = window.localStorage.getItem(clave);
-      return crudo ? JSON.parse(crudo) : porDefecto;
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
     } catch (e) {
-      return porDefecto;
+      return null;
     }
   }
 
-  function escribirJSON(clave, valor) {
+  function cargarRoles() {
     try {
-      window.localStorage.setItem(clave, JSON.stringify(valor));
-      return true;
+      return JSON.parse(localStorage.getItem(STORAGE_ROLES) || "{}");
     } catch (e) {
-      return false;
+      return {};
     }
   }
 
-  function hashSimple(texto) {
-    var h = 5381;
-    for (var i = 0; i < texto.length; i += 1) {
-      h = ((h << 5) + h + texto.charCodeAt(i)) >>> 0;
-    }
-    return h.toString(16);
+  function guardarUsuario(u) {
+    if (!u) { localStorage.removeItem(STORAGE_KEY); return; }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
   }
 
-  function tieneCrypto() {
-    return !!(window.crypto && window.crypto.subtle && window.TextEncoder);
+  function guardarRoles(r) {
+    localStorage.setItem(STORAGE_ROLES, JSON.stringify(r));
   }
 
-  function bytesAHex(buffer) {
-    return Array.prototype.map
-      .call(new Uint8Array(buffer), function (b) {
-        return ("0" + b.toString(16)).slice(-2);
-      })
-      .join("");
-  }
+  const Auth = {
+    usuario: null,
 
-  function hashClave(clave) {
-    var sal = "logica-proposicional::";
-    if (tieneCrypto()) {
-      return window.crypto.subtle
-        .digest("SHA-256", new window.TextEncoder().encode(sal + clave))
-        .then(bytesAHex)
-        .catch(function () {
-          return "f" + hashSimple(sal + clave);
-        });
-    }
-    return Promise.resolve("f" + hashSimple(sal + clave));
-  }
-
-  function normalizar(texto) {
-    return String(texto || "").trim().toLowerCase();
-  }
-
-  function listaUsuarios() {
-    var lista = leerJSON(CLAVE_USUARIOS, null);
-    if (!Array.isArray(lista)) return [];
-    return lista;
-  }
-
-  function guardarUsuarios(lista) {
-    return escribirJSON(CLAVE_USUARIOS, lista);
-  }
-
-  function sembrarCuentaPorDefecto() {
-    if (leerJSON(CLAVE_USUARIOS, null)) return Promise.resolve();
-    return hashClave(CUENTA_POR_DEFECTO.clave).then(function (hash) {
-      guardarUsuarios([
-        {
-          usuario: CUENTA_POR_DEFECTO.usuario,
-          nombre: CUENTA_POR_DEFECTO.nombre,
-          hash: hash,
-          creado: new Date().toISOString(),
-        },
-      ]);
-    });
-  }
-
-  function buscarUsuario(usuario) {
-    var clave = normalizar(usuario);
-    var lista = listaUsuarios();
-    for (var i = 0; i < lista.length; i += 1) {
-      if (normalizar(lista[i].usuario) === clave) return lista[i];
-    }
-    return null;
-  }
-
-  function abrirSesion(registro) {
-    escribirJSON(CLAVE_SESION, {
-      usuario: registro.usuario,
-      nombre: registro.nombre || registro.usuario,
-      desde: new Date().toISOString(),
-    });
-  }
-
-  var Auth = {
-    rutaLogin: function () {
-      return RUTA_LOGIN;
-    },
-
-    sembrar: sembrarCuentaPorDefecto,
-
-    sesion: function () {
-      var s = leerJSON(CLAVE_SESION, null);
-      if (!s || !s.usuario) return null;
-      return s;
-    },
-
-    usuarioActual: function () {
-      var s = Auth.sesion();
-      return s ? s.usuario : null;
-    },
-
-    sesionValida: function () {
-      var s = Auth.sesion();
-      return !!(s && buscarUsuario(s.usuario));
-    },
-
-    registrar: function (datos) {
-      var usuario = String(datos.usuario || "").trim();
-      var nombre = String(datos.nombre || "").trim();
-      var clave = String(datos.clave || "");
-      var repetir = String(datos.repetir || "");
-
-      if (usuario.length < 3) {
-        return Promise.resolve({ ok: false, error: "El usuario necesita al menos 3 caracteres.", campo: "usuario" });
-      }
-      if (!/^[A-Za-z0-9_.-]+$/.test(usuario)) {
-        return Promise.resolve({
-          ok: false,
-          error: "Usa solo letras, numeros, punto, guion o guion bajo.",
-          campo: "usuario",
-        });
-      }
-      if (clave.length < 4) {
-        return Promise.resolve({ ok: false, error: "La clave necesita al menos 4 caracteres.", campo: "clave" });
-      }
-      if (clave !== repetir) {
-        return Promise.resolve({
-          ok: false,
-          error: "Las dos claves no coinciden.",
-          campo: "repetir",
-          limpiar: true,
-        });
-      }
-      if (buscarUsuario(usuario)) {
-        return Promise.resolve({
-          ok: false,
-          error: "Ese usuario ya existe. Prueba con otro.",
-          campo: "usuario",
-        });
-      }
-
-      return hashClave(clave).then(function (hash) {
-        var lista = listaUsuarios();
-        var registro = {
-          usuario: usuario,
-          nombre: nombre || usuario,
-          hash: hash,
-          creado: new Date().toISOString(),
-        };
-        lista.push(registro);
-        if (!guardarUsuarios(lista)) {
-          return { ok: false, error: "No se pudo guardar la cuenta en este navegador." };
+    init: function () {
+      this.usuario = cargarUsuario();
+      const roles = cargarRoles();
+      if (this.usuario) {
+        if (roles[this.usuario.nombre]) this.usuario.rol = roles[this.usuario.nombre];
+        else {
+          const todos = Object.keys(roles);
+          if (todos.length === 0) this.usuario.rol = "admin";
+          else this.usuario.rol = roles[this.usuario.nombre] || "participante";
         }
-        abrirSesion(registro);
-        return { ok: true, usuario: registro.usuario };
-      });
+      }
+      this.actualizarUI();
     },
 
-    entrar: function (usuario, clave) {
-      if (!String(usuario || "").trim()) {
-        return Promise.resolve({ ok: false, error: "Escribe tu usuario.", campo: "usuario" });
+    actualizarUI: function () {
+      const slots = document.querySelectorAll("[data-slot='usuario']");
+      const salir = document.querySelectorAll("[data-slot='salir']");
+      if (slots.length) {
+        slots.forEach(function (el) {
+          el.textContent = this.usuario ? (this.usuario.nombre + " (" + (this.usuario.rol||"participante") + ")") : "invitado";
+        }.bind(this));
       }
-      if (!String(clave || "")) {
-        return Promise.resolve({ ok: false, error: "Escribe tu clave.", campo: "clave" });
+      if (salir.length) {
+        salir.forEach(function (el) {
+          el.hidden = !this.usuario;
+          el.onclick = function () { Auth.cerrarSesion(); };
+        }.bind(this));
       }
-      var registro = buscarUsuario(usuario);
-      if (!registro) {
-        return Promise.resolve({
-          ok: false,
-          error: "Usuario no encontrado. Crea una cuenta en REGISTRO.",
-          campo: "usuario",
-        });
-      }
-      return hashClave(clave).then(function (hash) {
-        if (hash !== registro.hash) {
-          return { ok: false, error: "Clave incorrecta. Intentalo de nuevo.", campo: "clave", limpiar: true };
-        }
-        abrirSesion(registro);
-        return { ok: true, usuario: registro.usuario };
-      });
-    },
-
-    salir: function () {
-      try {
-        window.localStorage.removeItem(CLAVE_SESION);
-      } catch (e) {
-        /* sin almacenamiento: la sesion ya no existe */
-      }
-    },
-
-    proteger: function () {
-      return Auth.sesionValida();
     },
 
     protegerPagina: function () {
-      if (Auth.sesionValida()) return true;
-      document.documentElement.style.opacity = "0";
-      var volver = window.location.pathname.split("/").pop() || "index.html";
-      window.location.replace(RUTA_LOGIN + "?volver=" + encodeURIComponent(volver));
-      return false;
+      this.init();
+      const paginasProtegidas = ["directo", "inverso", "ml"];
+      const pag = document.body ? document.body.getAttribute("data-pagina") : null;
+      if (!this.usuario && paginasProtegidas.indexOf(pag) !== -1) {
+        window.location.href = "login.html";
+      }
+      this.mostrarPanelAdmin();
     },
 
-    montarNav: function () {
-      var hueco = document.querySelector('[data-slot="usuario"]');
-      var boton = document.querySelector('[data-slot="salir"]');
-      var saludo = document.querySelector('[data-slot="nombre"]');
-      var s = Auth.sesion();
-      if (hueco) {
-        hueco.textContent = s ? "@" + s.nombre : "invitado";
-        hueco.title = s ? "Sesion iniciada como " + s.usuario : "Sin sesion";
+    login: function (nombre, pass) {
+      if (!nombre || !pass) return { ok: false, msg: "Rellena usuario y contraseña" };
+      const lista = JSON.parse(localStorage.getItem("lp_usuarios") || "[]");
+      const u = lista.find(function (x) { return x.nombre === nombre && x.pass === pass; });
+      if (!u) return { ok: false, msg: "Usuario o contraseña incorrectos" };
+      this.usuario = { nombre: u.nombre };
+      const roles = cargarRoles();
+      if (roles[u.nombre]) this.usuario.rol = roles[u.nombre];
+      else {
+        const todosRoles = Object.keys(roles);
+        const todosUsuarios = lista.map(function(x){return x.nombre;});
+        const tieneAdmin = todosRoles.some(function(k){return roles[k]==="admin";});
+        if (!tieneAdmin && todosUsuarios.length >=1) {
+          this.usuario.rol = "admin";
+        } else this.usuario.rol = "participante";
       }
-      if (saludo && s) saludo.textContent = s.nombre;
-      if (boton) {
-        boton.hidden = !s;
-        boton.addEventListener("click", function () {
-          Auth.salir();
-          window.location.href = RUTA_LOGIN;
-        });
-      }
+      guardarUsuario(this.usuario);
+      roles[this.usuario.nombre] = this.usuario.rol;
+      guardarRoles(roles);
+      return { ok: true };
     },
+
+    registrar: function (nombre, pass) {
+      if (!nombre || !pass) return { ok: false, msg: "Rellena usuario y contraseña" };
+      const lista = JSON.parse(localStorage.getItem("lp_usuarios") || "[]");
+      if (lista.find(function (x) { return x.nombre === nombre; })) return { ok: false, msg: "Ya existe ese usuario" };
+      lista.push({ nombre: nombre, pass: pass });
+      localStorage.setItem("lp_usuarios", JSON.stringify(lista));
+      const roles = cargarRoles();
+      const tieneAdmin = Object.keys(roles).some(function(k){return roles[k]==="admin";});
+      let rolAsignado = "participante";
+      if (!tieneAdmin) rolAsignado = "admin";
+      roles[nombre] = rolAsignado;
+      guardarRoles(roles);
+      this.usuario = { nombre: nombre, rol: rolAsignado };
+      guardarUsuario(this.usuario);
+      return { ok: true, rol: rolAsignado };
+    },
+
+    cerrarSesion: function () {
+      guardarUsuario(null);
+      this.usuario = null;
+      window.location.href = "login.html";
+    },
+
+    esAdmin: function () {
+      return this.usuario && this.usuario.rol === "admin";
+    },
+
+    forzarRolAdmin: function (nombre) {
+      const roles = cargarRoles();
+      roles[nombre] = "admin";
+      guardarRoles(roles);
+      if (this.usuario && this.usuario.nombre === nombre) this.usuario.rol = "admin";
+      this.actualizarUI();
+      this.mostrarPanelAdmin();
+    },
+
+    mostrarPanelAdmin: function () {
+      const panel = document.getElementById("panel-admin");
+      if (!panel) return;
+      if (this.esAdmin()) panel.classList.remove("hidden");
+      else panel.classList.add("hidden");
+    },
+
+    getUsuario: function () {
+      return this.usuario;
+    }
   };
 
-  window.Auth = Auth;
-
-  Auth.sembrar();
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", Auth.montarNav);
-  } else {
-    Auth.montarNav();
-  }
-})();
+  global.Auth = Auth;
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function(){ Auth.init(); });
+  else Auth.init();
+})(window);

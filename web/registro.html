@@ -10,6 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/estilos.css">
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
 </head>
 <body data-pagina="registro" class="min-h-screen">
 
@@ -48,6 +51,35 @@
           <input type="text" id="usuario" name="usuario" autocomplete="username"
                  placeholder="min. 3 caracteres" spellcheck="false" required>
         </div>
+
+        <fieldset class="campo">
+          <legend class="mb-1 text-amber-400 text-[0.5rem] uppercase">Rol en el sistema</legend>
+          <div class="roles-opciones">
+            <div>
+              <input type="radio" id="rol-participante" name="rol" value="participante" class="rol-radio" checked>
+              <label class="rol-caja" for="rol-participante">
+                <span class="rol-nombre">Participante</span>
+                <span class="rol-desc">Accede a los módulos Directo, Inverso y Asistente IA.</span>
+              </label>
+            </div>
+            <div>
+              <input type="radio" id="rol-admin" name="rol" value="admin" class="rol-radio">
+              <label class="rol-caja admin" for="rol-admin">
+                <span class="rol-nombre">Admin</span>
+                <span class="rol-desc">Además abre el panel de configuración global.</span>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="campo hidden" id="campo-clave-admin">
+          <label for="clave-admin">Clave de administrador</label>
+          <input type="password" id="clave-admin" name="clave-admin" autocomplete="off"
+                 placeholder="clave maestra" spellcheck="false">
+          <span class="ayuda">La clave maestra por defecto es <code>1234</code>. El administrador
+            activo puede cambiarla desde su panel.</span>
+        </div>
+
         <div class="campo">
           <label for="clave">Clave</label>
           <input type="password" id="clave" name="clave" autocomplete="new-password"
@@ -68,7 +100,6 @@
 
   </main>
 
-  <script src="assets/js/auth.js"></script>
   <script src="assets/js/portal.js"></script>
   <script src="assets/js/asistente.js"></script>
 </body>

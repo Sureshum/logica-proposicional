@@ -11,6 +11,9 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/estilos.css">
   <link rel="manifest" href="manifest.json">
+  <!-- storage.js + app.js en <head>: el tema se aplica antes del primer pintado. -->
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/app.js"></script>
   <script src="assets/js/auth.js"></script>
   <script>Auth.protegerPagina();</script>
 </head>
@@ -42,13 +45,14 @@
           Construcción de proposiciones moleculares → Fórmula Bien Formada (FBF).
         </p>
       </div>
+      <p id="info-limites" class="text-xs text-slate-400 text-right"></p>
     </div>
 
     <section class="caja p-6 mb-6">
       <h2 class="pixel-titulo text-slate-700 mb-1">1 · Proposiciones simples</h2>
       <p class="text-sm text-slate-500 mb-4">
         Define variables con su significado. Cada variable se convierte en una
-        tarjeta que podrás negar o combinar.
+        tarjeta que podrás negar, combinar o arrastrar al workbench.
       </p>
 
       <div class="grid sm:grid-cols-[140px_1fr_auto_auto] gap-2">
@@ -63,7 +67,7 @@
 
       <div class="flex flex-wrap items-center gap-2 mt-3">
         <input id="cant-generar" type="number" min="1" max="50" value="3"
-               class="px-2 py-1 border border-slate-300 w-24 text-sm">
+               class="px-2 py-1 border border-slate-300 w-24 text-sm" aria-label="Cantidad a generar">
         <button onclick="generarTodas()" class="btn-pixel btn-rosa">Generar todas</button>
         <button onclick="abrirHistorial()" class="btn-pixel btn-gris">Historial</button>
       </div>
@@ -88,6 +92,7 @@
           <strong>si…entonces</strong>, <strong>si y solo si</strong>), agrupa las
           proposiciones del mismo tema y les asigna símbolos libres.
         </p>
+        <p id="estado-nlp" class="text-sm text-amber-700 mt-2 hidden"></p>
       </div>
     </section>
 
@@ -101,12 +106,12 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-2 mb-4">
-        <button onclick="negar()" class="btn-conectivo" title="Negación: no A"><span class="texto-fbf">¬</span><span class="text-[10px] normal-case">no</span></button>
-        <button onclick="combinar('∧')" class="btn-conectivo" title="Conjunción: A y B"><span class="texto-fbf">∧</span><span class="text-[10px] normal-case">y</span></button>
-        <button onclick="combinar('∨')" class="btn-conectivo" title="Disyunción: A o B"><span class="texto-fbf">∨</span><span class="text-[10px] normal-case">o</span></button>
-        <button onclick="combinar('→')" class="btn-conectivo" title="Condicional: si A entonces B"><span class="texto-fbf">→</span><span class="text-[10px] normal-case">si…entonces</span></button>
-        <button onclick="combinar('↔')" class="btn-conectivo" title="Bicondicional: A si y solo si B"><span class="texto-fbf">↔</span><span class="text-[10px] normal-case">sii</span></button>
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <button onclick="negar()" data-conector="¬" class="btn-conectivo" title="Negación: no A. Arrastra al slot del workbench"><span class="texto-fbf">¬</span><span class="text-[10px] normal-case">no</span></button>
+        <button onclick="combinar('∧')" data-conector="∧" class="btn-conectivo" title="Conjunción: A y B. Arrastra al slot del workbench"><span class="texto-fbf">∧</span><span class="text-[10px] normal-case">y</span></button>
+        <button onclick="combinar('∨')" data-conector="∨" class="btn-conectivo" title="Disyunción: A o B. Arrastra al slot del workbench"><span class="texto-fbf">∨</span><span class="text-[10px] normal-case">o</span></button>
+        <button onclick="combinar('→')" data-conector="→" class="btn-conectivo" title="Condicional: si A entonces B. Arrastra al slot del workbench"><span class="texto-fbf">→</span><span class="text-[10px] normal-case">si…entonces</span></button>
+        <button onclick="combinar('↔')" data-conector="↔" class="btn-conectivo" title="Bicondicional: A si y solo si B. Arrastra al slot del workbench"><span class="texto-fbf">↔</span><span class="text-[10px] normal-case">sii</span></button>
         <p id="estado-conector" class="text-sm text-slate-500 ml-2 flex-1"></p>
       </div>
 
@@ -121,7 +126,15 @@
 
     <section class="caja p-6 mb-6">
       <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <h2 class="pixel-titulo text-slate-700">3 · Tarjetas de construcción</h2>
+        <h2 class="pixel-titulo text-slate-700">3 · Tarjeta de construcción (workbench)</h2>
+        <span class="text-xs text-slate-400">Arrastra las tarjetas y los conectivos a las ranuras</span>
+      </div>
+      <div id="workbench"></div>
+    </section>
+
+    <section class="caja p-6 mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <h2 class="pixel-titulo text-slate-700">4 · Tarjetas de construcción</h2>
         <div id="multi-toggle"></div>
       </div>
       <div id="panel-multi"></div>
@@ -159,6 +172,7 @@
       <div id="modal-historial-contenido" class="overflow-auto flex-1 text-xs"></div>
       <div class="flex justify-end gap-2 mt-3">
         <button onclick="restaurarUltimo()" class="btn-pixel btn-verde">Restaurar último</button>
+        <button id="btn-limpiar-historial" onclick="limpiarHistorial()" class="btn-pixel btn-rojo hidden">Vaciar historial</button>
         <button onclick="App.cerrarModal('modal-historial')" class="btn-pixel btn-gris">Cerrar</button>
       </div>
     </div>
@@ -171,207 +185,525 @@
   <script src="assets/js/generador.js"></script>
   <script src="assets/js/nlp.js"></script>
   <script src="assets/js/ml.js"></script>
-  <script src="assets/js/storage.js"></script>
-  <script src="assets/js/app.js"></script>
-  <script src="assets/js/ui-admin.js"></script>
   <script src="assets/js/sortable.min.js"></script>
   <script src="assets/js/builder-multi.js"></script>
+  <script src="assets/js/workbench.js"></script>
+  <script src="assets/js/ui-admin.js"></script>
   <script src="assets/js/asistente.js"></script>
   <script>
+  /* ==========================================================================
+   * Módulo Directo · estado de la página
+   * --------------------------------------------------------------------------
+   * `tarjetas` es la lista de tarjetas activas (las arrastrables al workbench).
+   * Todas las altas pasan por crearTarjeta(), que aplica los límites fijados
+   * por el administrador antes de añadir nada.
+   * ======================================================================== */
+  "use strict";
 
-    let idTarjeta = 0;
-    let tarjetas = [];
-    let selA = null;
-    let selB = null;
+  let idTarjeta = 0;
+  let tarjetas = [];
+  let selA = null;
+  let selB = null;
 
-    function herramientas() {
-      return {
-        mostrar: function (msg, color) {
-          const el = document.getElementById('estado-atomo');
-          const colores = { red: 'text-red-600', green: 'text-emerald-600', amber: 'text-amber-700' };
-          el.className = 'text-sm mt-2 ' + (colores[color] || 'text-amber-700');
-          el.textContent = msg;
-        },
-        simbolosEnUso: function () {
-          const s = new Set();
-          tarjetas.forEach(t => Object.keys(t.descripciones || {}).forEach(k => s.add(k)));
-          return Array.from(s);
-        },
-        textosEnUso: function () {
-          const s = new Set();
-          tarjetas.forEach(t => Object.values(t.descripciones || {}).forEach(v => {
-            if (v) s.add(Generador.normalizarTexto(v));
-          }));
-          return Array.from(s);
-        },
-        unirDescripciones: function (lista) {
-          const d = {};
-          lista.forEach(t => Object.assign(d, t.descripciones || {}));
-          return d;
-        }
-      };
+  /* Utilidades que consultan otros módulos (App para los límites,
+     Workbench para el tablero). */
+  window.contarTarjetasActivas = function () { return tarjetas.length; };
+  window.obtenerTarjetaPorId = function (id) { return obtenerTarjeta(id); };
+
+  function herramientas() {
+    return {
+      mostrar: function (msg, color) {
+        const el = document.getElementById('estado-atomo');
+        const colores = { red: 'text-red-600', green: 'text-emerald-600', amber: 'text-amber-700' };
+        el.className = 'text-sm mt-2 ' + (colores[color] || 'text-amber-700');
+        el.textContent = msg;
+      },
+      simbolosEnUso: function () {
+        const s = new Set();
+        tarjetas.forEach(t => Object.keys(t.descripciones || {}).forEach(k => s.add(k)));
+        return Array.from(s);
+      },
+      textosEnUso: function () {
+        const s = new Set();
+        tarjetas.forEach(t => Object.values(t.descripciones || {}).forEach(v => {
+          if (v) s.add(Generador.normalizarTexto(v));
+        }));
+        return Array.from(s);
+      },
+      unirDescripciones: function (lista) {
+        const d = {};
+        lista.forEach(t => Object.assign(d, t.descripciones || {}));
+        return d;
+      }
+    };
+  }
+
+  function obtenerTarjeta(id) { return tarjetas.find(t => t.id === id) || null; }
+  function tarjetaANegar() { return obtenerTarjeta(selA) || tarjetas[0] || null; }
+
+  function asignarA(id) { selA = id; if (selB === id) selB = null; renderTodo(); }
+  function asignarB(id) { selB = id; if (selA === id) selA = null; renderTodo(); }
+  function quitarA() { selA = null; renderTodo(); }
+  function quitarB() { selB = null; renderTodo(); }
+  function borrar(id) {
+    tarjetas = tarjetas.filter(t => t.id !== id);
+    if (selA === id) selA = null;
+    if (selB === id) selB = null;
+    renderTodo();
+  }
+
+  /* ----------------------------------------------------------------------
+   * Alta centralizada de tarjetas + límites del administrador
+   * -------------------------------------------------------------------- */
+
+  /* Los límites configuran a los participantes: el administrador los ve y los
+     modifica, pero no queda bloqueado por ellos. */
+  function limitesAplican() {
+    return !(window.Auth && Auth.esAdmin());
+  }
+
+  async function crearTarjeta(datos) {
+    await App.cargarAjustes();
+    if (limitesAplican()) {
+      const control = App.comprobarTarjetas(1);
+      if (!control.ok) {
+        App.avisoLimite(
+          'Límite del administrador alcanzado. Máximo ' + control.limite +
+          ' tarjetas y ya tienes ' + control.actuales + '.'
+        );
+        return null;
+      }
     }
+    const t = {
+      id: ++idTarjeta,
+      formula: datos.formula,
+      lectura: datos.lectura,
+      descripciones: datos.descripciones || {},
+      tema: datos.tema || null
+    };
+    tarjetas.unshift(t);
+    renderTodo();
+    guardarEnHistorial({
+      tipo: datos.tipo || 'manual',
+      formula: t.formula,
+      lectura: t.lectura,
+      descripciones: t.descripciones,
+      tema: t.tema
+    });
+    return t;
+  }
 
-    function obtenerTarjeta(id) { return tarjetas.find(t => t.id === id) || null; }
-    function tarjetaANegar() { return obtenerTarjeta(selA) || tarjetas[0] || null; }
+  /* Texto auxiliar con los límites vigentes (se refresca con cada render). */
+  function renderInfoLimites() {
+    const el = document.getElementById('info-limites');
+    if (!el) return;
+    const lim = App.limites();
+    const n = tarjetas.length;
+    const partes = [n + ' tarjeta' + (n === 1 ? '' : 's') + ' activa' + (n === 1 ? '' : 's')];
+    if (lim.maxGenerar) partes.push('lote máx. ' + lim.maxGenerar);
+    if (lim.maxTarjetas) partes.push('total máx. ' + lim.maxTarjetas);
+    el.innerHTML = partes.join(' · ') + '<br>' +
+      (Auth.esAdmin()
+        ? '<span class="text-amber-700">Sesión admin: los límites no te afectan</span>'
+        : (lim.maxGenerar || lim.maxTarjetas
+            ? 'Límites fijados por el administrador'
+            : 'Sin límites configurados'));
+  }
 
-    function asignarA(id) { selA = id; if (selB === id) selB = null; renderTodo(); }
-    function asignarB(id) { selB = id; if (selA === id) selA = null; renderTodo(); }
-    function quitarA() { selA = null; renderTodo(); }
-    function quitarB() { selB = null; renderTodo(); }
-    function borrar(id) { tarjetas = tarjetas.filter(t => t.id !== id); if (selA===id) selA=null; if (selB===id) selB=null; renderTodo(); }
-
-    function agregarAtomo() {
-      const h = herramientas();
-      const simbolo = document.getElementById('nuevo-simbolo').value.trim();
-      const descripcion = document.getElementById('nuevo-descripcion').value.trim();
-      if (!simbolo) { h.mostrar('Escribe un símbolo (p,q…).', 'amber'); return; }
-      if (!/^[a-z][a-z0-9]*$/i.test(simbolo)) { h.mostrar('Símbolo inválido.', 'red'); return; }
-      const s = simbolo.toLowerCase();
-      const usados = new Set(h.simbolosEnUso().map(x=>x.toLowerCase()));
-      if (usados.has(s)) { h.mostrar('Símbolo ya en uso.', 'red'); return; }
-      const descripciones = descripcion ? { [s]: descripcion } : {};
-      const t = { id: ++idTarjeta, formula: s, lectura: descripcion||s, descripciones };
-      tarjetas.unshift(t);
-      document.getElementById('nuevo-simbolo').value=''; document.getElementById('nuevo-descripcion').value='';
-      h.mostrar('Proposición añadida.', 'green');
-      renderTodo();
-      guardarEnHistorial({tipo:'manual', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones});
+  /* El input de cantidad no puede pedir más de lo permitido. */
+  function sincronizarInputGenerar() {
+    const input = document.getElementById('cant-generar');
+    const lim = App.limites().maxGenerar;
+    if (!input) return;
+    if (lim) {
+      input.max = lim;
+      if (parseInt(input.value, 10) > lim) input.value = lim;
+    } else {
+      input.max = 50;
     }
+  }
 
-    function generarAleatoria() {
-      const h = herramientas();
-      const res = Generador.proposicionCoherente({ simbolosUsados: h.simbolosEnUso(), textosUsados: h.textosEnUso() });
-      const t = { id: ++idTarjeta, formula: res.formula, lectura: res.lectura, descripciones: res.descripciones, tema: res.etiquetaTema };
-      tarjetas.unshift(t);
-      h.mostrar('Proposición generada.', 'green');
-      renderTodo();
-      guardarEnHistorial({tipo:'aleatoria', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones, tema:t.tema});
-    }
+  /* ----------------------------------------------------------------------
+   * Proposiciones simples
+   * -------------------------------------------------------------------- */
+  async function agregarAtomo() {
+    const h = herramientas();
+    const simbolo = document.getElementById('nuevo-simbolo').value.trim();
+    const descripcion = document.getElementById('nuevo-descripcion').value.trim();
+    if (!simbolo) { h.mostrar('Escribe un símbolo (p,q…).', 'amber'); return; }
+    if (!/^[a-z][a-z0-9]*$/i.test(simbolo)) { h.mostrar('Símbolo inválido.', 'red'); return; }
+    const s = simbolo.toLowerCase();
+    const usados = new Set(h.simbolosEnUso().map(x => x.toLowerCase()));
+    if (usados.has(s)) { h.mostrar('Símbolo ya en uso.', 'red'); return; }
+    const descripciones = descripcion ? { [s]: descripcion } : {};
+    const creada = await crearTarjeta({ formula: s, lectura: descripcion || s, descripciones: descripciones, tipo: 'manual' });
+    if (!creada) return;
+    document.getElementById('nuevo-simbolo').value = '';
+    document.getElementById('nuevo-descripcion').value = '';
+    h.mostrar('Proposición añadida.', 'green');
+  }
 
-    async function generarTodas() {
-      const h = herramientas();
-      let n = parseInt(document.getElementById('cant-generar').value)||3;
-      if (n<1) n=1; if (n>50) n=50;
-      const ajustes = await Storage.ajustesGetTodos({maxGenerar:0});
-      if (ajustes.maxGenerar>0 && n>ajustes.maxGenerar) {
-        document.getElementById('modal-limite-msg').textContent = 'Límite del administrador alcanzado. Máximo permitido: ' + ajustes.maxGenerar;
-        App.abrirModal('modal-limite');
+  async function generarAleatoria() {
+    const h = herramientas();
+    const res = Generador.proposicionCoherente({ simbolosUsados: h.simbolosEnUso(), textosUsados: h.textosEnUso() });
+    const creada = await crearTarjeta({
+      formula: res.formula, lectura: res.lectura, descripciones: res.descripciones,
+      tema: res.etiquetaTema, tipo: 'aleatoria'
+    });
+    if (creada) h.mostrar('Proposición generada.', 'green');
+  }
+
+  async function generarTodas() {
+    const h = herramientas();
+    let n = parseInt(document.getElementById('cant-generar').value, 10) || 3;
+    if (n < 1) n = 1;
+    if (n > 50) n = 50;
+
+    await App.cargarAjustes();
+
+    if (limitesAplican()) {
+      /* Límite de lote (maxGenerar). */
+      const lote = App.comprobarGenerar(n);
+      if (!lote.ok) {
+        App.avisoLimite('Límite del administrador por lote. Máximo permitido: ' + lote.limite + '.');
+        sincronizarInputGenerar();
         return;
       }
-      const batchId = 'b_'+Date.now();
-      const agregadas = [];
-      for (let i=0;i<n;i++) {
-        const res = Generador.proposicionCoherente({ simbolosUsados: h.simbolosEnUso(), textosUsados: h.textosEnUso() });
-        const t = { id: ++idTarjeta, formula: res.formula, lectura: res.lectura, descripciones: res.descripciones, tema: res.etiquetaTema };
-        tarjetas.unshift(t);
-        agregadas.push(t);
+
+      /* Límite de tarjetas totales (maxTarjetas): se recorta el lote. */
+      const cap = App.comprobarTarjetas(n);
+      if (!cap.ok) {
+        if (cap.restantes < 1) {
+          App.avisoLimite('Límite de tarjetas alcanzado: máximo ' + cap.limite + ' y ya tienes ' + cap.actuales + '.');
+          return;
+        }
+        App.avisoLimite('Límite de tarjetas: solo caben ' + cap.restantes + ' más. Se generarán ' + cap.restantes + '.');
+        n = cap.restantes;
       }
-      h.mostrar('Generadas '+n+' proposiciones.', 'green');
-      renderTodo();
-      guardarEnHistorial({tipo:'batch', formula:agregadas[0].formula, lectura:'Lote de '+n+' proposiciones', descripciones:{}, batchId, count:n});
     }
 
-    async function guardarEnHistorial(item) {
-      try { await Storage.historialAgregar(item); } catch(e){}
-    }
-
-    async function abrirHistorial() {
-      const lista = await Storage.historialListar(80);
-      let html = '<table class="tabla-verdad w-full"><thead><tr><th>Fecha</th><th>Tipo</th><th>Fórmula</th><th>Lectura</th></tr></thead><tbody>';
-      lista.forEach(h=>{
-        const f = new Date(h.fecha).toLocaleString();
-        html += '<tr><td>'+esc(f)+'</td><td>'+esc(h.tipo)+'</td><td class="texto-fbf">'+esc(h.formula)+'</td><td>'+esc(h.lectura)+'</td></tr>';
-      });
-      html += '</tbody></table>';
-      document.getElementById('modal-historial-contenido').innerHTML = html;
-      App.abrirModal('modal-historial');
-    }
-
-    async function restaurarUltimo() {
-      const lista = await Storage.historialListar(1);
-      if (!lista.length) return App.toast('Historial vacío', 'error');
-      const h = herramientas();
-      const ult = lista[0];
+    const batchId = 'b_' + Date.now();
+    const agregadas = [];
+    for (let i = 0; i < n; i++) {
       const res = Generador.proposicionCoherente({ simbolosUsados: h.simbolosEnUso(), textosUsados: h.textosEnUso() });
-      const t = { id: ++idTarjeta, formula: ult.formula && ult.formula.match(/^[a-z¬∧∨→↔\(\)\s]+$/i)? ult.formula : res.formula, lectura: ult.lectura||res.lectura, descripciones: ult.descripciones||res.descripciones, tema: ult.tema||null };
+      const t = {
+        id: ++idTarjeta,
+        formula: res.formula,
+        lectura: res.lectura,
+        descripciones: res.descripciones,
+        tema: res.etiquetaTema
+      };
       tarjetas.unshift(t);
-      renderTodo();
-      App.toast('Último elemento restaurado', 'ok');
+      agregadas.push(t);
     }
-
-    function renderTodo(){ renderChips(); renderResultado(); renderLista(); renderSugerencia(); }
-    function renderChips(){
-      const a=obtenerTarjeta(selA), b=obtenerTarjeta(selB);
-      document.getElementById('chipA').innerHTML=a?('A: <span class="texto-fbf">'+esc(a.formula)+'</span> <button onclick="quitarA()" class="ml-1 text-red-500">✕</button>'):'A: ninguna';
-      document.getElementById('chipB').innerHTML=b?('B: <span class="texto-fbf">'+esc(b.formula)+'</span> <button onclick="quitarB()" class="ml-1 text-red-500">✕</button>'):'B: ninguna';
-    }
-    function renderResultado(){
-      const p=document.getElementById('panel-resultado');
-      if(!tarjetas.length){ p.classList.add('hidden'); return; }
-      p.classList.remove('hidden');
-      document.getElementById('res-formula').innerHTML=esc(tarjetas[0].formula);
-      document.getElementById('res-lectura').textContent='“'+tarjetas[0].lectura+'”';
-    }
-    function renderLista(){
-      const c=document.getElementById('lista-tarjetas');
-      if(!tarjetas.length){ 
-        c.innerHTML='<p class="text-sm text-slate-400">Aún no hay tarjetas.</p>';
-        if(window.Sortable){ try{ Sortable.get(c)||Sortable.create(c,{animation:150,handle:'.drag-handle'}); }catch(e){} }
-        return; 
-      }
-      c.innerHTML=tarjetas.map(t=>{
-        const selM = BuilderMulti.enModoMulti() && BuilderMulti.estaSeleccionado(t.id);
-        const chk = BuilderMulti.enModoMulti() ? `<input type="checkbox" class="w-4 h-4" ${selM?'checked':''} data-chk="${t.id}">` : '';
-        return `<div data-id="${t.id}" class="flex items-center gap-3 border-2 border-black p-3 bg-slate-50 ${selM?'ring-2 ring-emerald-400':''}">
-          <span class="drag-handle cursor-grab text-slate-400">☰</span>
-          ${chk}
-          <button onclick="asignarA(${t.id})" class="badge-radio badge-a ${t.id===selA?'activo':''}">A</button>
-          <button onclick="asignarB(${t.id})" class="badge-radio badge-b ${t.id===selB?'activo':''}">B</button>
-          <div class="min-w-0">
-            <div class="texto-fbf truncate">${esc(t.formula)}</div>
-            <div class="text-xs text-slate-500 truncate">${esc(t.lectura)}</div>
-            ${t.tema?'<div class="text-[10px] text-indigo-400 mt-0.5 truncate">tema: '+esc(t.tema)+'</div>':''}
-          </div>
-          <button onclick="borrar(${t.id})" class="ml-auto p-1 text-slate-400 hover:text-red-500">✕</button>
-        </div>`;
-      }).join('');
-      if(window.Sortable){ try{ Sortable.get(c)||Sortable.create(c,{animation:150,handle:'.drag-handle', onEnd: function(){ reordenarTarjetas(); }}); }catch(e){} }
-      c.querySelectorAll('[data-chk]').forEach(cb=>{
-        cb.onchange=function(){ BuilderMulti.toggle(parseInt(this.getAttribute('data-chk'))); };
-      });
-    }
-    function negar(){
-      const o=tarjetaANegar(); if(!o)return mostrarEstado('Sin tarjeta','red');
-      const ast=new LogicaParser.NegNode(LogicaParser.parsear(o.formula));
-      const t={id:++idTarjeta, formula:LogicaParser.aCadena(ast), lectura:LogicaParser.renderEs(ast,o.descripciones), descripciones:o.descripciones};
-      tarjetas.unshift(t); selA=null; mostrarEstado('Negación aplicada','green'); renderTodo();
-      guardarEnHistorial({tipo:'negacion', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones});
-    }
-    function combinar(op){
-      const a=obtenerTarjeta(selA), b=obtenerTarjeta(selB);
-      if(!a||!b||a.id===b.id)return mostrarEstado('Selecciona A y B distintos','red');
-      const nodo=new LogicaParser.BinNode(op, LogicaParser.parsear(a.formula), LogicaParser.parsear(b.formula));
-      const desc=herramientas().unirDescripciones([a,b]);
-      const t={id:++idTarjeta, formula:LogicaParser.aCadena(nodo), lectura:LogicaParser.renderEs(nodo,desc), descripciones:desc};
-      tarjetas.unshift(t); selA=selB=null; mostrarEstado('Combinado '+op,'green'); renderTodo();
-      guardarEnHistorial({tipo:'combinacion', formula:t.formula, lectura:t.lectura, descripciones:t.descripciones});
-    }
-    function mostrarEstado(msg,c){ const el=document.getElementById('estado-conector'); el.className='text-sm ml-2 flex-1 '+({red:'text-red-600',green:'text-emerald-600'}[c]||'text-slate-500'); el.textContent=msg; }
-    function reordenarTarjetas(){
-      const c=document.getElementById('lista-tarjetas');
-      const orden=[];
-      c.querySelectorAll('[data-id]').forEach(el=>{ orden.push(parseInt(el.getAttribute('data-id'))); });
-      const mapa={};
-      tarjetas.forEach(t=>mapa[t.id]=t);
-      tarjetas=orden.map(id=>mapa[id]).filter(Boolean);
-      renderTodo();
-    }
-    document.getElementById('frase-nlp').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();traducirFrase();}});
-    document.addEventListener('DOMContentLoaded',function(){ if(window.BuilderMulti) BuilderMulti.init(); });
     renderTodo();
+    h.mostrar('Generadas ' + n + ' proposiciones.', 'green');
+    guardarEnHistorial({
+      tipo: 'batch', formula: agregadas[0].formula,
+      lectura: 'Lote de ' + n + ' proposiciones', descripciones: {},
+      batchId: batchId, count: n
+    });
+  }
+
+  /* Traduce lenguaje natural a FBF reutilizando los significados ya declarados. */
+  async function traducirFrase() {
+    const campo = document.getElementById('frase-nlp');
+    const estado = document.getElementById('estado-nlp');
+    const frase = campo.value.trim();
+    estado.classList.remove('hidden');
+    if (!frase) { estado.className = 'text-sm text-amber-700 mt-2'; estado.textContent = 'Escribe una frase.'; return; }
+
+    /* Mapa de significados conocidos: symbol → descripción. */
+    const simbolos = herramientas().unirDescripciones(tarjetas);
+    try {
+      const fbf = Nlp.oracionAFbf(frase, simbolos);
+      const ast = LogicaParser.parsear(fbf);
+      const nuevas = {};
+      LogicaParser.atomos(ast).forEach(function (a) { if (!simbolos[a]) nuevas[a] = a; });
+      const creada = await crearTarjeta({
+        formula: fbf,
+        lectura: LogicaParser.renderEs(ast, Object.assign({}, simbolos)),
+        descripciones: nuevas,
+        tipo: 'nlp'
+      });
+      if (!creada) return;
+      estado.className = 'text-sm text-emerald-600 mt-2';
+      estado.textContent = 'Traducida a: ' + fbf;
+    } catch (e) {
+      estado.className = 'text-sm text-red-600 mt-2';
+      estado.textContent = e.message;
+    }
+  }
+
+  /* ----------------------------------------------------------------------
+   * Historial
+   * -------------------------------------------------------------------- */
+  async function guardarEnHistorial(item) {
+    try { await Storage.historialAgregar(item); } catch (e) { /* silencioso */ }
+  }
+
+  async function abrirHistorial() {
+    const lista = await Storage.historialListar(80);
+    let html = '<table class="tabla-verdad w-full"><thead><tr><th>Fecha</th><th>Tipo</th><th>Fórmula</th><th>Lectura</th></tr></thead><tbody>';
+    if (!lista.length) html += '<tr><td colspan="4">Sin historial todavía.</td></tr>';
+    lista.forEach(function (h) {
+      const f = new Date(h.fecha).toLocaleString();
+      html += '<tr><td>' + esc(f) + '</td><td>' + esc(h.tipo) + '</td><td class="texto-fbf">' + esc(h.formula) + '</td><td>' + esc(h.lectura) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('modal-historial-contenido').innerHTML = html;
+
+    /* El vaciado lo permite el administrador siempre; un participante solo si
+       el administrador lo ha autorizado en el panel. */
+    const btn = document.getElementById('btn-limpiar-historial');
+    if (btn) btn.hidden = !(Auth.esAdmin() || (App.ajustes || {}).permitirBorrarHistorial !== false);
+
+    App.abrirModal('modal-historial');
+  }
+
+  /* Vaciar el historial respetando el ajuste "permitirBorrarHistorial". */
+  async function limpiarHistorial() {
+    await App.cargarAjustes();
+    const esAdmin = Auth.esAdmin();
+    if (!esAdmin && App.ajustes.permitirBorrarHistorial === false) {
+      App.toast('El administrador no permite borrar el historial.', 'error');
+      return;
+    }
+    if (!confirm('¿Vaciar todo el historial de este dispositivo?')) return;
+    await Storage.historialLimpiar();
+    App.toast('Historial vaciado', 'ok');
+    abrirHistorial();
+  }
+
+  async function restaurarUltimo() {
+    const lista = await Storage.historialListar(1);
+    if (!lista.length) return App.toast('Historial vacío', 'error');
+    const h = herramientas();
+    const ult = lista[0];
+    const res = Generador.proposicionCoherente({ simbolosUsados: h.simbolosEnUso(), textosUsados: h.textosEnUso() });
+    const creada = await crearTarjeta({
+      formula: ult.formula && /^[a-z¬∧∨→↔()\s]+$/i.test(ult.formula) ? ult.formula : res.formula,
+      lectura: ult.lectura || res.lectura,
+      descripciones: ult.descripciones || res.descripciones,
+      tema: ult.tema || null,
+      tipo: 'restaurada'
+    });
+    if (creada) App.toast('Último elemento restaurado', 'ok');
+  }
+
+  /* ----------------------------------------------------------------------
+   * Render
+   * -------------------------------------------------------------------- */
+  function renderTodo() {
+    renderChips();
+    renderResultado();
+    renderLista();
+    renderSugerencia();
+    renderInfoLimites();
+    sincronizarInputGenerar();
+  }
+
+  function renderChips() {
+    const a = obtenerTarjeta(selA), b = obtenerTarjeta(selB);
+    document.getElementById('chipA').innerHTML = a
+      ? 'A: <span class="texto-fbf">' + esc(a.formula) + '</span> <button onclick="quitarA()" class="ml-1 text-red-500">✕</button>'
+      : 'A: ninguna';
+    document.getElementById('chipB').innerHTML = b
+      ? 'B: <span class="texto-fbf">' + esc(b.formula) + '</span> <button onclick="quitarB()" class="ml-1 text-red-500">✕</button>'
+      : 'B: ninguna';
+  }
+
+  function renderResultado() {
+    const p = document.getElementById('panel-resultado');
+    if (!tarjetas.length) { p.classList.add('hidden'); return; }
+    p.classList.remove('hidden');
+    document.getElementById('res-formula').innerHTML = esc(tarjetas[0].formula);
+    document.getElementById('res-lectura').textContent = '“' + tarjetas[0].lectura + '”';
+  }
+
+  function renderLista() {
+    const c = document.getElementById('lista-tarjetas');
+    if (!tarjetas.length) {
+      c.innerHTML = '<p class="text-sm text-slate-400">Aún no hay tarjetas. Añade una proposición arriba y arrastrala al workbench.</p>';
+      if (window.Sortable) { try { Sortable.get(c) || Sortable.create(c, { animation: 150, handle: '.drag-handle' }); } catch (e) { } }
+      return;
+    }
+    c.innerHTML = tarjetas.map(function (t) {
+      const selM = BuilderMulti.enModoMulti() && BuilderMulti.estaSeleccionado(t.id);
+      const chk = BuilderMulti.enModoMulti() ? '<input type="checkbox" class="w-4 h-4" ' + (selM ? 'checked' : '') + ' data-chk="' + t.id + '">' : '';
+      return '<div data-id="' + t.id + '" data-wb-tarjeta="' + t.id + '" draggable="true" ' +
+        'class="tarjeta-fbf flex items-center gap-3 border-2 border-black p-3 bg-slate-50 ' + (selM ? 'ring-2 ring-emerald-400' : '') + '">' +
+        '<span class="drag-handle cursor-grab text-slate-400" title="Reordenar con Sortable">☰</span>' +
+        chk +
+        '<button onclick="asignarA(' + t.id + ')" class="badge-radio badge-a ' + (t.id === selA ? 'activo' : '') + '">A</button>' +
+        '<button onclick="asignarB(' + t.id + ')" class="badge-radio badge-b ' + (t.id === selB ? 'activo' : '') + '">B</button>' +
+        '<div class="min-w-0">' +
+          '<div class="texto-fbf truncate">' + esc(t.formula) + '</div>' +
+          '<div class="text-xs text-slate-500 truncate">' + esc(t.lectura) + '</div>' +
+          (t.tema ? '<div class="text-[10px] text-indigo-400 mt-0.5 truncate">tema: ' + esc(t.tema) + '</div>' : '') +
+        '</div>' +
+        '<span class="ml-auto text-[10px] text-slate-400 hidden sm:inline">arrastra al workbench</span>' +
+        '<button onclick="borrar(' + t.id + ')" class="p-1 text-slate-400 hover:text-red-500">✕</button>' +
+      '</div>';
+    }).join('');
+
+    if (window.Sortable) {
+      try {
+        Sortable.get(c) || Sortable.create(c, {
+          animation: 150, handle: '.drag-handle', onEnd: function () { reordenarTarjetas(); }
+        });
+      } catch (e) { }
+    }
+    c.querySelectorAll('[data-chk]').forEach(function (cb) {
+      cb.onchange = function () { BuilderMulti.toggle(parseInt(this.getAttribute('data-chk'), 10)); };
+    });
+
+    /* Engancha las tarjetas como arrastrables hacia el workbench. */
+    if (window.Workbench) Workbench.refrescarOrigenes();
+  }
+
+  /* Sugerencias del modelo de ML al tener A y B seleccionadas. */
+  function renderSugerencia() {
+    const panel = document.getElementById('panel-sugerencia');
+    if (!panel) return;
+    const a = obtenerTarjeta(selA), b = obtenerTarjeta(selB);
+    if (!a || !b || a.id === b.id || !window.ML || typeof ML.sugerirConectivo !== 'function') {
+      panel.classList.add('hidden');
+      return;
+    }
+    let sugerencias = [];
+    try { sugerencias = ML.sugerirConectivo(a.formula, b.formula, { maximo: 3 }); } catch (e) { sugerencias = []; }
+    if (!sugerencias.length) { panel.classList.add('hidden'); return; }
+
+    panel.classList.remove('hidden');
+    document.getElementById('sugerencia-nota').textContent =
+      'Ordenadas por puntuación: forma de la FBF, nº de átomos y clase predicha.';
+    document.getElementById('sugerencia-lista').innerHTML = sugerencias.map(function (s) {
+      return '<button type="button" class="btn-insertar" title="' + esc(s.motivo) + '" ' +
+        'onclick="aplicarSugerencia(\'' + esc(s.op) + '\')">' + s.op + '</button>';
+    }).join('');
+  }
+
+  function aplicarSugerencia(op) {
+    combinar(op);
+  }
+
+  /* ----------------------------------------------------------------------
+   * Conectivos sobre la selección A / B
+   * -------------------------------------------------------------------- */
+  async function negar() {
+    const o = tarjetaANegar();
+    if (!o) return mostrarEstado('Sin tarjeta', 'red');
+    const ast = new LogicaParser.NegNode(LogicaParser.parsear(o.formula));
+    const creada = await crearTarjeta({
+      formula: LogicaParser.aCadena(ast),
+      lectura: LogicaParser.renderEs(ast, o.descripciones),
+      descripciones: o.descripciones,
+      tipo: 'negacion'
+    });
+    if (!creada) return;
+    selA = null;
+    mostrarEstado('Negación aplicada', 'green');
+  }
+
+  async function combinar(op) {
+    const a = obtenerTarjeta(selA), b = obtenerTarjeta(selB);
+    if (!a || !b || a.id === b.id) return mostrarEstado('Selecciona A y B distintos', 'red');
+    const nodo = new LogicaParser.BinNode(op, LogicaParser.parsear(a.formula), LogicaParser.parsear(b.formula));
+    const desc = herramientas().unirDescripciones([a, b]);
+    const creada = await crearTarjeta({
+      formula: LogicaParser.aCadena(nodo),
+      lectura: LogicaParser.renderEs(nodo, desc),
+      descripciones: desc,
+      tipo: 'combinacion'
+    });
+    if (!creada) return;
+    selA = selB = null;
+    mostrarEstado('Combinado ' + op, 'green');
+  }
+
+  function mostrarEstado(msg, c) {
+    const el = document.getElementById('estado-conector');
+    el.className = 'text-sm ml-2 flex-1 ' + ({ red: 'text-red-600', green: 'text-emerald-600' }[c] || 'text-slate-500');
+    el.textContent = msg;
+  }
+
+  function reordenarTarjetas() {
+    const c = document.getElementById('lista-tarjetas');
+    const orden = [];
+    c.querySelectorAll('[data-id]').forEach(function (el) { orden.push(parseInt(el.getAttribute('data-id'), 10)); });
+    const mapa = {};
+    tarjetas.forEach(function (t) { mapa[t.id] = t; });
+    tarjetas = orden.map(function (id) { return mapa[id]; }).filter(Boolean);
+    renderTodo();
+  }
+
+  /* ----------------------------------------------------------------------
+   * Workbench: la tarjeta de construcción visual
+   * -------------------------------------------------------------------- */
+  function iniciarWorkbench() {
+    if (!window.Workbench) return;
+    Workbench.init({
+      contenedor: 'workbench',
+      alCrear: async function (resultado) {
+        const creada = await crearTarjeta({
+          formula: resultado.formula,
+          lectura: resultado.lectura,
+          descripciones: resultado.descripciones,
+          tipo: 'workbench'
+        });
+        if (!creada) return false;          // no se limpian las ranuras si falló el límite
+        mostrarEstado('FBF creada desde el workbench', 'green');
+        return creada;
+      },
+      alCambiar: function () { /* la vista previa ya se actualiza sola */ },
+      alAvisar: function (msg, tipo) { App.toast(msg, tipo === 'error' ? 'error' : 'info'); }
+    });
+  }
+
+  /* Un clic en el cuerpo de la tarjeta la lleva al workbench (alternativa
+     al arrastre para táctiles y teclado). Los botones A / B / ✕ no cuentan. */
+  document.addEventListener('click', function (ev) {
+    const tarjeta = ev.target.closest('[data-wb-tarjeta]');
+    if (!tarjeta || !window.Workbench) return;
+    if (ev.target.closest('button, input, .drag-handle')) return;
+    const t = obtenerTarjeta(parseInt(tarjeta.getAttribute('data-wb-tarjeta'), 10));
+    if (!t) return;
+    Workbench.asignar({
+      tipo: 'proposicion', id: t.id, formula: t.formula,
+      lectura: t.lectura, descripciones: t.descripciones || {}
+    });
+  });
+
+  /* ----------------------------------------------------------------------
+   * Arranque
+   * -------------------------------------------------------------------- */
+  document.getElementById('frase-nlp').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); traducirFrase(); }
+  });
+  document.getElementById('nuevo-simbolo').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); agregarAtomo(); }
+  });
+
+  document.addEventListener('DOMContentLoaded', async function () {
+    if (window.BuilderMulti) BuilderMulti.init();
+    iniciarWorkbench();
+    await App.cargarAjustes();
+    renderTodo();
+  });
+
+  /* El tema o los límites pueden cambiar en esta misma página (panel admin) o
+     en otra pestaña del mismo dispositivo: se refresca la información visible. */
+  document.addEventListener('tema:cambio', renderInfoLimites);
+  document.addEventListener('ajustes:cambio', function () {
+    renderInfoLimites();
+    sincronizarInputGenerar();
+  });
+  document.addEventListener('auth:cambio', function () {
+    renderInfoLimites();
+    if (window.AdminUI) AdminUI.renderResumen();
+  });
   </script>
+  <script>if(navigator.serviceWorker){try{navigator.serviceWorker.register('sw.js');}catch(e){}}</script>
 </body>
 </html>
-
-  <script>if(navigator.serviceWorker){try{navigator.serviceWorker.register('sw.js');}catch(e){}}</script>

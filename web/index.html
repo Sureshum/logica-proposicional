@@ -10,6 +10,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/estilos.css">
+  <link rel="manifest" href="manifest.json">
+  <!-- storage.js + app.js antes que auth.js: el tema se aplica antes del primer pintado. -->
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/app.js"></script>
   <script src="assets/js/auth.js"></script>
   <script>Auth.protegerPagina();</script>
 </head>
@@ -27,6 +31,7 @@
         <a href="ml.html" class="nav-enlace">Asistente IA</a>
         <span class="mx-1 text-slate-500">|</span>
         <span class="px-2 text-slate-300" data-slot="usuario">invitado</span>
+        <a href="login.html" class="nav-enlace nav-entrar" data-slot="entrar">Entrar</a>
         <button type="button" class="nav-enlace" data-slot="salir" hidden>Salir</button>
       </div>
     </div>
@@ -112,7 +117,32 @@
       </div>
     </section>
 
+  <!-- Panel exclusivo del administrador (lo rellena ui-admin.js). -->
+    <div id="panel-admin" class="hidden"></div>
+
   </main>
+
+  <!-- Modales compartidos: límite del administrador e historial -->
+  <div id="modal-limite" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center" aria-hidden="true">
+    <div class="caja p-6 max-w-sm w-[90%] text-center">
+      <h3 class="pixel-titulo text-slate-800 mb-2">Límite alcanzado</h3>
+      <p id="modal-limite-msg" class="text-sm text-slate-600 mb-4">Límite del administrador alcanzado.</p>
+      <button onclick="App.cerrarModal('modal-limite')" class="btn-pixel btn-azul">Aceptar</button>
+    </div>
+  </div>
+
+  <div id="modal-historial" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center" aria-hidden="true">
+    <div class="caja p-6 max-w-4xl w-[95%] max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="pixel-titulo text-slate-800">Historial de proposiciones</h3>
+        <button onclick="App.cerrarModal('modal-historial')" class="text-slate-500 hover:text-red-500">✕</button>
+      </div>
+      <div id="modal-historial-contenido" class="overflow-auto flex-1 text-xs"></div>
+      <div class="flex justify-end gap-2 mt-3">
+        <button onclick="App.cerrarModal('modal-historial')" class="btn-pixel btn-gris">Cerrar</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="text-center text-xs text-slate-400 py-4 relative z-10">
     Fórmulas Bien Formadas · Tablas de verdad · Machine Learning
@@ -123,10 +153,8 @@
   <script src="assets/js/generador.js"></script>
   <script src="assets/js/nlp.js"></script>
   <script src="assets/js/ml.js"></script>
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/ui-admin.js"></script>
   <script src="assets/js/asistente.js"></script>
-  <link rel="manifest" href="manifest.json">
   <script>
     if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
   </script>

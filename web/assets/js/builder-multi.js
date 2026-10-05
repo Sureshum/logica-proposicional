@@ -56,12 +56,17 @@
         nodo = new LogicaParser.BinNode(op, nodo, LogicaParser.parsear(lista[i].formula));
       }
       const desc = herramientas().unirDescripciones(lista);
-      const t = { id: ++idTarjeta, formula: LogicaParser.aCadena(nodo), lectura: LogicaParser.renderEs(nodo, desc), descripciones: desc };
-      tarjetas.unshift(t);
+      /* Se reutiliza el alta centralizada para respetar los límites del
+         administrador y registrar la tarjeta en el historial. */
+      const creado = await crearTarjeta({
+        formula: LogicaParser.aCadena(nodo),
+        lectura: LogicaParser.renderEs(nodo, desc),
+        descripciones: desc,
+        tipo: 'combinacion_multi'
+      });
+      if(!creado) return;
       BuilderMulti.limpiar();
       if(typeof mostrarEstado==='function') mostrarEstado('Combinadas '+lista.length+' con '+op, 'green');
-      renderTodo();
-      try { await Storage.historialAgregar({tipo:'combinacion_multi', formula:t.formula, lectura:t.lectura+' ('+lista.length+' elementos)', descripciones:t.descripciones, count:lista.length}); } catch(e){}
     },
     getSeleccion: function(){ return new Set(seleccion); },
     estaSeleccionado: function(id){ return seleccion.has(id); },

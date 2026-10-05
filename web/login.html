@@ -10,6 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/estilos.css">
+  <script src="assets/js/storage.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/auth.js"></script>
 </head>
 <body data-pagina="login" class="min-h-screen">
 
@@ -54,8 +57,16 @@
 
       <p class="portal-pista">
         ¿Es tu primera vez? <a href="registro.html">Crea una cuenta</a><br>
-        <button type="button" id="usar-demo" class="btn-pixel btn-ambar mt-3">Usar admin / 1234</button>
+        Elige tu rol al registrarte: <strong>Participante</strong> usa los tres módulos;
+        <strong>Admin</strong> además abre el panel de configuración.
       </p>
+
+      <div class="flex flex-wrap gap-2 justify-center mt-3">
+        <button type="button" id="usar-demo" class="btn-pixel btn-ambar">Usar admin / 1234</button>
+        <button type="button" id="usar-demo-participante" class="btn-pixel btn-gris">
+          Entrar como participante
+        </button>
+      </div>
 
       <p class="portal-pie">
         Sistema 100% navegador: los datos de la cuenta se guardan solo en este dispositivo.
@@ -64,7 +75,6 @@
 
   </main>
 
-  <script src="assets/js/auth.js"></script>
   <script src="assets/js/portal.js"></script>
   <script src="assets/js/asistente.js"></script>
 </body>

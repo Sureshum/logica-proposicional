@@ -1,4 +1,12 @@
-
+/* ============================================================================
+ * portal.js · Controlador de las páginas de acceso y registro
+ * ----------------------------------------------------------------------------
+ * Se apoya por completo en la API de auth.js:
+ *   Auth.sesionValida(), Auth.entrar(u, c), Auth.registrar(datos).
+ * Su trabajo aquí es puramente de interfaz: validar la Experiencia de
+ * registro (mostrar/ocultar la clave de administrator según el rol elegido),
+ * validar formularios, mostrar avisos y redirigir.
+ * ========================================================================== */
 (function () {
   "use strict";
 
@@ -17,6 +25,7 @@
     }
   }
 
+  /* Destino tras entrar: la página que el usuario intentaba abrir o la portada. */
   function destino() {
     var volver = new URLSearchParams(window.location.search).get("volver") || "";
     if (/^[\w.-]+\.html$/.test(volver) && volver !== "login.html" && volver !== "registro.html") {
@@ -30,12 +39,17 @@
     return el ? el.value : "";
   }
 
+  function rolElegido() {
+    var marcado = document.querySelector("input[name='rol']:checked");
+    return marcado ? marcado.value : "participante";
+  }
+
   function mirarError(res) {
-    var campo = res.campo ? document.getElementById(res.campo) : null;
+    var campo = res && res.campo ? document.getElementById(res.campo) : null;
     if (!campo) return;
     if (res.limpiar) campo.value = "";
     campo.focus();
-    campo.select();
+    if (typeof campo.select === "function") campo.select();
   }
 
   function bloquear(boton, texto) {
@@ -51,12 +65,37 @@
     boton.disabled = false;
   }
 
-  var formLogin = document.getElementById("form-login");
-  if (formLogin && Auth.sesionValida()) {
-    window.location.replace(destino());
-    return;
+  /* ------------------------------------------------------------------ */
+  /* Registro: la clave de administrador solo aparece si se elige Admin */
+  /* ------------------------------------------------------------------ */
+  function prepararSelectorRol() {
+    var radios = document.querySelectorAll("input[name='rol']");
+    var campo = document.getElementById("campo-clave-admin");
+    if (!radios.length || !campo) return;
+
+    function sincronizar() {
+      var esAdmin = rolElegido() === "admin";
+      campo.classList.toggle("hidden", !esAdmin);
+      var input = document.getElementById("clave-admin");
+      if (input) {
+        input.disabled = !esAdmin;
+        if (!esAdmin) input.value = "";
+      }
+    }
+    radios.forEach(function (r) { r.addEventListener("change", sincronizar); });
+    sincronizar();
   }
+
+  /* ------------------------------------------------------------------ */
+  /* Acceso                                                              */
+  /* ------------------------------------------------------------------ */
+  var formLogin = document.getElementById("form-login");
   if (formLogin) {
+    /* Si ya hay sesión abierta no tiene sentido quedarse aquí. */
+    if (Auth.sesionValida()) {
+      window.location.replace(destino());
+      return;
+    }
     formLogin.addEventListener("submit", function (evento) {
       evento.preventDefault();
       limpiar();
@@ -64,7 +103,7 @@
       bloquear(boton, "Entrando...");
       Auth.entrar(valor("usuario"), valor("clave")).then(function (res) {
         if (res.ok) {
-          mostrar("¡Bienvenido, " + res.usuario + "! Abriendo el panel...", "bien");
+          mostrar("¡Bienvenido, " + res.usuario + "! Rol: " + Auth.etiquetaRol(res.rol) + ". Abriendo…", "bien");
           window.location.replace(destino());
           return;
         }
@@ -75,8 +114,12 @@
     });
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Registro                                                            */
+  /* ------------------------------------------------------------------ */
   var formRegistro = document.getElementById("form-registro");
   if (formRegistro) {
+    prepararSelectorRol();
     formRegistro.addEventListener("submit", function (evento) {
       evento.preventDefault();
       limpiar();
@@ -87,9 +130,11 @@
         usuario: valor("usuario"),
         clave: valor("clave"),
         repetir: valor("repetir"),
+        rol: rolElegido(),
+        claveAdmin: valor("clave-admin")
       }).then(function (res) {
         if (res.ok) {
-          mostrar("¡Cuenta creada! Bienvenido, " + res.usuario + ".", "bien");
+          mostrar("¡Cuenta creada! Bienvenido, " + res.usuario + " (" + Auth.etiquetaRol(res.rol) + ").", "bien");
           window.setTimeout(function () {
             window.location.replace(destino());
           }, 700);
@@ -102,13 +147,46 @@
     });
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Atajos de acceso rápido                                            */
+  /* ------------------------------------------------------------------ */
+  function rellenar(usuario, clave) {
+    document.getElementById("usuario").value = usuario;
+    document.getElementById("clave").value = clave;
+    limpiar();
+    document.getElementById("clave").focus();
+  }
+
   var demo = document.getElementById("usar-demo");
   if (demo) {
     demo.addEventListener("click", function () {
-      document.getElementById("usuario").value = "admin";
-      document.getElementById("clave").value = "1234";
-      limpiar();
-      document.getElementById("clave").focus();
+      rellenar(Auth.CUENTA_DEMO.usuario, Auth.CUENTA_DEMO.clave);
+    });
+  }
+
+  /* Atajo para probar la experiencia de participante sin crear cuenta:
+     si no existe la cuenta "participante", la registra con clave 1234. */
+  var demoParticipante = document.getElementById("usar-demo-participante");
+  if (demoParticipante) {
+    demoParticipante.addEventListener("click", function () {
+      var usuario = "participante";
+      var existe = Auth.cuentas().some(function (c) { return c.usuario === usuario; });
+      if (existe) { rellenar(usuario, "1234"); return; }
+      demoParticipante.disabled = true;
+      Auth.registrar({
+        nombre: "Participante de prueba",
+        usuario: usuario,
+        clave: "1234",
+        repetir: "1234",
+        rol: "participante"
+      }).then(function (res) {
+        demoParticipante.disabled = false;
+        if (res.ok) {
+          window.location.replace(destino());
+          return;
+        }
+        rellenar(usuario, "1234");
+      });
     });
   }
 })();
